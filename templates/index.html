@@ -1,5 +1,12 @@
 {% extends "main.html" %}
 
+{% block toolbar %}
+  <div class="right">
+    {{ username['name'] }} 
+    <a href="/logout" id="logout_button">Logout</a>
+  </div>
+{% end %}
+
 {% block header %}
   <hr>
 	<h1>{{ header_text }}</h1>
