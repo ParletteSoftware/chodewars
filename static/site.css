@@ -33,10 +33,10 @@ footer a{
   font-size: .8em;
 }
 
-a:link {text-decoration:none;}
-a:visited {text-decoration:none;}
-a:hover {text-decoration:underline;}
-a:active {text-decoration:underline;}
+a:link {text-decoration:none;color:green;}
+a:visited {text-decoration:none;color:green;}
+a:hover {text-decoration:underline;color:green;}
+a:active {text-decoration:underline;color:green;}
 
 #toolbar {
   width: 100%;
