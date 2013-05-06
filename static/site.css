@@ -33,6 +33,25 @@ footer a{
   font-size: .8em;
 }
 
+a:link {text-decoration:none;color:green;}
+a:visited {text-decoration:none;color:green;}
+a:hover {text-decoration:underline;color:green;}
+a:active {text-decoration:underline;color:green;}
+
+#toolbar {
+  width: 100%;
+  height: 1em;
+  color: white;
+  background-color: black;
+  font-size: .8em;
+  font-variant: small-caps;
+  position: fixed;
+}
+
+#logout_button {
+  margin-right: 1em;
+}
+
 #container {
   background-color: white;
 }
@@ -48,4 +67,12 @@ footer a{
 
 footer {
   text-align: center;
+}
+
+.right {
+  float: right;
+}
+
+.inline {
+  display: inline-block;
 }
