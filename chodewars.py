@@ -54,7 +54,7 @@ class LoginHandler(BaseHandler, tornado.auth.GoogleMixin):
     if self.get_argument("openid.mode", None):
       self.get_authenticated_user(self.async_callback(self._on_auth))
       return
-    self.authenticate_redirect(ax_attrs=["name"])
+    self.authenticate_redirect(ax_attrs=["name","email"])
 
   def _on_auth(self, user):
     if not user:
