@@ -4,6 +4,9 @@
   <link rel="stylesheet" href="{{ static_url("site.css") }}" type="text/css"/>
 </head>
 <body>
+  <div id='toolbar' class="inline">
+    {% block toolbar %}{% end %}
+  </div>
 	<div id="container">
 		<header>
 			{% block header %}<h1>Hello.</h1>{% end %}
