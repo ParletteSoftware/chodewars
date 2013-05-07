@@ -30,7 +30,8 @@ class BaseHandler(tornado.web.RequestHandler):
   def get_current_user(self):
     user_json = self.get_secure_cookie("user")
     """user_json is of the form:
-    {u'first_name': u'Matthew',
+    {u'email': u'matthew.parlette@gmail.com',
+    u'first_name': u'Matthew',
     u'last_name': u'Parlette',
     u'claimed_id': u'https://www.google.com/accounts/o8/id?id=AItOawn5BtKjHuaIP870Gex-U3jwWKLi2X2pqGw',
     u'name': u'Matthew Parlette'}"""
@@ -45,7 +46,7 @@ class MainHandler(BaseHandler):
       page_title = "Here's a page",
       header_text = "Heading",
       footer_text = "Chodewars",
-      username = self.current_user,
+      user = self.current_user,
     )
 
 class LoginHandler(BaseHandler, tornado.auth.GoogleMixin):

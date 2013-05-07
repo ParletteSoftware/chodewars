@@ -2,7 +2,7 @@
 
 {% block toolbar %}
   <div class="right">
-    {{ username['name'] }} 
+    {{ user['name'] }} 
     <a href="/logout" id="logout_button">Logout</a>
   </div>
 {% end %}
@@ -14,7 +14,7 @@
 {% end %}
 
 {% block body %}
-<p>Logged in as {{ username['first_name'] }}</p>
+<p>Logged in as {{ user['first_name'] }}</p>
 {% end %}
 
 {% block footer %}
