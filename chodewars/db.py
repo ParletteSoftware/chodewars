@@ -67,6 +67,7 @@ class FlatFileDatabase(Database):
       os.makedirs(os.path.join(self.location,self.name))
       
     if os.path.exists(os.path.join(self.location,self.name)):
-      pass
+      return True
     else:
       self.log.error("Database directory (%s) could not be created" % os.path.join(self.location,self.name))
+      return False

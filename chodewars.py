@@ -4,6 +4,7 @@ import tornado.auth
 import os.path
 import logging
 import datetime
+import sys
 
 from tornado.options import define,options
 from chodewars.game import Game
@@ -72,9 +73,11 @@ class LogoutHandler(BaseHandler):
 if __name__ == "__main__":
   print "Creating game object..."
   game = Game()
-  game.load_config()
-  game.connect_db()
-  print "...ok"
+  if game.load_config() and game.connect_db():
+    print "...ok"
+  else:
+    print "error initializing game"
+    sys.exit(1)
   
   app = Application()
   app.listen(options.port)

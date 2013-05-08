@@ -33,11 +33,13 @@ class Game(object):
       self.log.info('Using flat file database')
       self.db = db.FlatFileDatabase(location = "data",
                                     name = "u")
+    return True
   
   def connect_db(self):
     if self.db:
       self.log.debug('Connecting to database')
-      self.db.connect()
+      return self.db.connect()
     else:
       self.log.error("There is no database defined")
+      return False
   
