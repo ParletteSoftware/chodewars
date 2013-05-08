@@ -1,4 +1,5 @@
 import os
+import logging
 
 class Database(object):
   """This is a base class which defines the methods that need to be implemented for database operations.
@@ -9,11 +10,21 @@ class Database(object):
   To program the game to support any of the databases, only the methods defined in the Database base class should be used to avoid any database-specific code."""
   
   def __init__(self,name,location):
+    #Setup logging for this module
+    self.create_logger("chodewars.db.%s" % self.__class__.__name__)
+    
     #Database name
     self.name = name
     
     #Location of the database (server address, file path)
     self.location = location
+  
+  def create_logger(self,name):
+    self.log = logging.getLogger(name)
+    self.log.setLevel(logging.DEBUG)
+    fh = logging.FileHandler('chodewars.log')
+    fh.setLevel(logging.DEBUG)
+    self.log.addHandler(fh)
   
   def connect(self):
     """Connect to the database."""
@@ -38,4 +49,5 @@ class Database(object):
 class FlatFileDatabase(Database):
   def connect(self):
     """Make sure the self.location exists, and has a self.name directory in it."""
-    os.path.makedirs(os.path.join(self.location,self.name))
+    self.log.debug("Creating directory %s" % os.path.join(self.location,self.name))
+    os.makedirs(os.path.join(self.location,self.name))
