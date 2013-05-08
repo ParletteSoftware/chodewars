@@ -6,6 +6,7 @@ import logging
 import datetime
 
 from tornado.options import define,options
+from chodewars.game import Game
 
 define("port", default=9000, help="run on the given port", type=int)
 
@@ -69,6 +70,11 @@ class LogoutHandler(BaseHandler):
     self.write("You are now logged out")
 
 if __name__ == "__main__":
+  print "Creating game object..."
+  game = Game()
+  game.load_config()
+  game.connect_db()
+  
   app = Application()
   app.listen(options.port)
   tornado.ioloop.IOLoop.instance().start()
