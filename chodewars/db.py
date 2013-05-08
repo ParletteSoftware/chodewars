@@ -62,5 +62,11 @@ class Database(object):
 class FlatFileDatabase(Database):
   def connect(self):
     """Make sure the self.location exists, and has a self.name directory in it."""
-    self.log.debug("Creating directory %s" % os.path.join(self.location,self.name))
-    os.makedirs(os.path.join(self.location,self.name))
+    if not os.path.exists(os.path.join(self.location,self.name)):
+      self.log.debug("Creating directory %s" % os.path.join(self.location,self.name))
+      os.makedirs(os.path.join(self.location,self.name))
+      
+    if os.path.exists(os.path.join(self.location,self.name)):
+      pass
+    else:
+      self.log.error("Database directory (%s) could not be created" % os.path.join(self.location,self.name))

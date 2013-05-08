@@ -74,6 +74,7 @@ if __name__ == "__main__":
   game = Game()
   game.load_config()
   game.connect_db()
+  print "...ok"
   
   app = Application()
   app.listen(options.port)
