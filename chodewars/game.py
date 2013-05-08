@@ -6,9 +6,22 @@ class Game(object):
     #Setup logging for this module
     self.log = logging.getLogger('chodewars.game')
     self.log.setLevel(logging.DEBUG)
+    
+    #Log Format
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    
+    #Log to File
     fh = logging.FileHandler('chodewars.log')
     fh.setLevel(logging.DEBUG)
+    fh.setFormatter(formatter)
+    
+    #Log to Console
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.ERROR)
+    ch.setFormatter(formatter)
+    
     self.log.addHandler(fh)
+    self.log.addHandler(ch)
     
     #Setup instance variables
     self.db = None

@@ -22,9 +22,22 @@ class Database(object):
   def create_logger(self,name):
     self.log = logging.getLogger(name)
     self.log.setLevel(logging.DEBUG)
+    
+    #Log Format
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    
+    #Log to File
     fh = logging.FileHandler('chodewars.log')
     fh.setLevel(logging.DEBUG)
+    fh.setFormatter(formatter)
+    
+    #Log to Console
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.ERROR)
+    ch.setFormatter(formatter)
+    
     self.log.addHandler(fh)
+    self.log.addHandler(ch)
   
   def connect(self):
     """Connect to the database."""
