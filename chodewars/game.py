@@ -46,4 +46,4 @@ class Game(object):
   def big_bang(self):
     if self.db:
       self.log.info("Executing Big Bang")
-      return db.big_bang()
+      return self.db.big_bang()

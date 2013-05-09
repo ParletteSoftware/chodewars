@@ -5,6 +5,7 @@ import os.path
 import logging
 import datetime
 import sys
+import argparse
 
 from tornado.options import define,options
 from chodewars.game import Game
@@ -87,8 +88,12 @@ if __name__ == "__main__":
     sys.exit(1)
   
   if args.bigbang:
+    print "Executing Big Bang..."
     game.big_bang()
+    print "...ok"
+    sys.exit(0)
   
+  print "Game created, listening for connections..."
   app = Application()
   app.listen(options.port)
   tornado.ioloop.IOLoop.instance().start()
