@@ -62,12 +62,32 @@ class Database(object):
 class FlatFileDatabase(Database):
   def connect(self):
     """Make sure the self.location exists, and has a self.name directory in it."""
-    if not os.path.exists(os.path.join(self.location,self.name)):
-      self.log.debug("Creating directory %s" % os.path.join(self.location,self.name))
-      os.makedirs(os.path.join(self.location,self.name))
+    self.path = os.path.join(self.location,self.name)
+    if not os.path.exists(self.path):
+      self.log.debug("Creating directory %s" % self.path)
+      os.makedirs(self.path)
       
-    if os.path.exists(os.path.join(self.location,self.name)):
+    if os.path.exists(self.path):
       return True
     else:
-      self.log.error("Database directory (%s) could not be created" % os.path.join(self.location,self.name))
+      self.log.error("Database directory (%s) could not be created" % self.path)
       return False
+  
+  def big_bang(self):
+    """Delete all of the files in the directory."""
+    if self.path:
+      if os.path.exists(self.path):
+        self.log.debug("Importing shutil")
+        shutil = __import__('shutil')
+        self.log.debug("Removing directory (%s) contents" % self.path)
+        shutil.rmtree(self.path)
+      else:
+        self.log.debug("Path %s does not exist, creating it..." % self.path)
+        os.makedirs(self.path)
+    else:
+      self.log.error("FlatFileDatabase instance variable 'path' is not defined")
+      return False
+    
+    #Create the universe
+    ##nothing to do yet
+    return True

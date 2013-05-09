@@ -32,7 +32,7 @@ class Game(object):
     if self.db_type is "file":
       self.log.info('Using flat file database')
       self.db = db.FlatFileDatabase(location = "data",
-                                    name = "u")
+                                    name = "universe")
     return True
   
   def connect_db(self):
