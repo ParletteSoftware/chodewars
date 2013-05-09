@@ -47,6 +47,10 @@ class Database(object):
     """Delete the database and create it from scratch."""
     pass
   
+  def is_empty(self):
+    """Return a boolean to signify if the database is empty (and requires a big bang)."""
+    pass
+  
   def add_player(self):
     """Add a player to the database."""
     pass
@@ -68,6 +72,9 @@ class FlatFileDatabase(Database):
       os.makedirs(self.path)
       
     if os.path.exists(self.path):
+      if self.is_empty():
+        self.log.info("Universe appears to be empty, executing Big Bang.")
+        return self.big_bang()
       return True
     else:
       self.log.error("Database directory (%s) could not be created" % self.path)
@@ -91,3 +98,22 @@ class FlatFileDatabase(Database):
     #Create the universe
     ##nothing to do yet
     return True
+  
+  def is_emtpy(self):
+    """Return true if the data directory is empty."""
+    if self.path:
+      if os.path.exists(self.path):
+        if os.listdir(self.path):
+          #A non-empty list was returned, meaning there are files there
+          self.log.debug("Path %s seems to have files in it, is_empty() returning False" % self.path)
+          return False
+        else:
+          #Empty list, no files in dir
+          self.log.debug("Path %s seems to have no files in it, is_empty() returning True" % self.path)
+          return True
+      else:
+        self.log.debug("Path %s does not exist, so returning True" % self.path)
+        return True
+    else:
+      self.log.error("FlatFileDatabase instance variable 'path' is not defined")
+      return False
