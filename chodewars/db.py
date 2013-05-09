@@ -84,10 +84,9 @@ class FlatFileDatabase(Database):
     """Delete all of the files in the directory."""
     if self.path:
       if os.path.exists(self.path):
-        self.log.debug("Importing shutil")
-        shutil = __import__('shutil')
         self.log.debug("Removing directory (%s) contents" % self.path)
-        shutil.rmtree(self.path)
+        for f in os.listdir(self.path):
+          os.remove(f)
       else:
         self.log.debug("Path %s does not exist, creating it..." % self.path)
         os.makedirs(self.path)
