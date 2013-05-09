@@ -11,6 +11,8 @@ from chodewars.game import Game
 
 define("port", default=9000, help="run on the given port", type=int)
 
+version = "0.0"
+
 class Application(tornado.web.Application):
   def __init__(self):
     handlers=[
@@ -71,6 +73,11 @@ class LogoutHandler(BaseHandler):
     self.write("You are now logged out")
 
 if __name__ == "__main__":
+  parser = argparse.ArgumentParser(description='Process command line options.')
+  parser.add_argument('--bigbang', action='store_true', help='Execute a Big Bang, this deletes an existing universe and creates a new one.')
+  parser.add_argument('--version', action='version', version='Chodewars v'+version)
+  args = parser.parse_args()
+  
   print "Creating game object..."
   game = Game()
   if game.load_config() and game.connect_db():
@@ -78,6 +85,9 @@ if __name__ == "__main__":
   else:
     print "error initializing game"
     sys.exit(1)
+  
+  if args.bigbang:
+    game.big_bang()
   
   app = Application()
   app.listen(options.port)

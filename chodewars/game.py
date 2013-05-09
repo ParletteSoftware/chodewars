@@ -43,3 +43,7 @@ class Game(object):
       self.log.error("There is no database defined")
       return False
   
+  def big_bang(self):
+    if self.db:
+      self.log.info("Executing Big Bang")
+      return db.big_bang()
