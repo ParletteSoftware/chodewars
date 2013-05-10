@@ -135,7 +135,7 @@ class FlatFileDatabase(Database):
   def add_player(self,player):
     """Create a file for the player if it doesn't already exist."""
     if self.db_exists():
-      if self.get_player() is None:
+      if self.get_player(player.name) is None:
         if self._write_player(player,"%s.player" % player.name):
           self.log.debug("add_player(): Player %s successfully added" % player.name)
           return True
@@ -160,3 +160,29 @@ class FlatFileDatabase(Database):
       return True
     self.log.error("_write_player(): Error opening %s for writing" % os.path.join(self.path,filename))
     return False
+  
+  def get_player(self,player_name):
+    """Verify a player file exists and load that Player object."""
+    if self.db_exists():
+      player_file_path = os.path.join(self.path,"%s.player" % player_name)
+      if os.path.exists(player_file_path):
+        self.log.debug("get_player(): Player file %s was found, calling _read_player()" % player_file_path)
+        return self._read_player("%s.player" % player_name)
+      else:
+        self.log.debug("get_player(): Player file %s was not found, returning None" % player_file_path)
+        return None
+    else:
+      self.log.error("get_player(): Database does not exist, aborting...")
+      return None
+    
+  def _read_player(self,filename):
+    """Read a player object from a file. The file should be verified as existing before this is called."""
+    self.log.debug("_read_player(): Opening %s for reading" % os.path.join(self.path,filename))
+    f = open(os.path.join(self.path,filename),'r')
+    with f:
+      id = f.readline().strip()
+      name = f.readline().strip()
+      f.close()
+      return Player(id,name)
+    self.log.error("_read_player(): Error opening %s for reading" % os.path.join(self.path,filename))
+    return None
