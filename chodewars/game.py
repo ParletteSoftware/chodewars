@@ -1,6 +1,8 @@
 import logging
 import db
 
+from player import Player
+
 class Game(object):
   def __init__(self):
     #Setup logging for this module
@@ -47,3 +49,8 @@ class Game(object):
     if self.db:
       self.log.info("Executing Big Bang")
       return self.db.big_bang()
+  
+  def add_player(self,player):
+    if self.db and player:
+      self.log.debug("Adding player %s" % player.name)
+      return self.db.add_player(player)

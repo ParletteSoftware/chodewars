@@ -1,6 +1,8 @@
 import os
 import logging
 
+from player import Player
+
 class Database(object):
   """This is a base class which defines the methods that need to be implemented for database operations.
   
@@ -39,6 +41,10 @@ class Database(object):
     self.log.addHandler(fh)
     self.log.addHandler(ch)
   
+  def db_exists(self):
+    """Return a boolean to signify if the database exists."""
+    pass
+  
   def connect(self):
     """Connect to the database."""
     pass
@@ -51,19 +57,28 @@ class Database(object):
     """Return a boolean to signify if the database is empty (and requires a big bang)."""
     pass
   
-  def add_player(self):
+  def add_player(self,player):
     """Add a player to the database."""
     pass
   
-  def get_player(self,player_id = None):
+  def get_player(self,player_name = None):
     """Retrieve a player account."""
-    pass
+    return None
   
   def get_sector(self,sector = None):
     """Retrieve a list of all items in a sector."""
     pass
   
 class FlatFileDatabase(Database):
+  def db_exists(self):
+    if self.path:
+      if os.path.exists(self.path):
+        self.log.debug("db_exists(): %s exists, returning True" % self.path)
+        return True
+    else:
+      self.log.error("db_exists(): FlatFileDatabase instance variable 'path' is not defined")
+      return False
+    
   def connect(self):
     """Make sure the self.location exists, and has a self.name directory in it."""
     self.path = os.path.join(self.location,self.name)
@@ -116,3 +131,32 @@ class FlatFileDatabase(Database):
     else:
       self.log.error("FlatFileDatabase instance variable 'path' is not defined")
       return False
+  
+  def add_player(self,player):
+    """Create a file for the player if it doesn't already exist."""
+    if self.db_exists():
+      if self.get_player() is None:
+        if self._write_player(player,"%s.player" % player.name):
+          self.log.debug("add_player(): Player %s successfully added" % player.name)
+          return True
+        else:
+          self.log.error("add_player(): Error writing to player file")
+          return False
+      else:
+        self.log.error("add_player(): Player already exists")
+        return False
+    else:
+      self.log.error("add_player(): Database does not exist, aborting...")
+      return False
+  
+  def _write_player(self,player,filename):
+    """Wrtie the player object to file, overwriting whatever is there."""
+    self.log.debug("_write_player(): Opening %s for writing" % os.path.join(self.path,filename))
+    f = open(os.path.join(self.path,filename),'w')
+    with f:
+      f.write("%s\n" % player.id)
+      f.write("%s\n" % player.name)
+      f.close()
+      return True
+    self.log.error("_write_player(): Error opening %s for writing" % os.path.join(self.path,filename))
+    return False
