@@ -16,6 +16,8 @@
 {% block body %}
   {% if player %}
     <p>Welcome {{player.name}}</p>
+  {% else %}
+    <p>Welcome. You will need to <a href="/add/player">create a player</a> before proceeding.</p>
   {% end %}
 {% end %}
 
