@@ -54,3 +54,8 @@ class Game(object):
     if self.db and player:
       self.log.debug("Adding player %s" % player.name)
       return self.db.add_player(player)
+  
+  def get_player_by_id(self,player_id):
+    if self.db:
+      self.log.debug("Retrieving player account for id %s" % player_id)
+      return self.db.get_player_by_id(player_id)

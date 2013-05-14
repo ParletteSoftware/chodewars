@@ -14,7 +14,9 @@
 {% end %}
 
 {% block body %}
-<p>Logged in as {{ user['first_name'] }}</p>
+  {% if player %}
+    <p>Welcome {{player.name}}</p>
+  {% end %}
 {% end %}
 
 {% block footer %}

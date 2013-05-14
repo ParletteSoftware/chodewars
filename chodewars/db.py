@@ -65,6 +65,10 @@ class Database(object):
     """Retrieve a player account."""
     return None
   
+  def get_player_by_id(self,player_id):
+    """Retrieve a player account by id."""
+    return None
+  
   def get_sector(self,sector = None):
     """Retrieve a list of all items in a sector."""
     pass
@@ -174,6 +178,17 @@ class FlatFileDatabase(Database):
     else:
       self.log.error("get_player(): Database does not exist, aborting...")
       return None
+  
+  def get_player_by_id(self,player_id):
+    """Go through each .player file to find the specified id."""
+    for f in os.listdir(self.path):
+      p = self._read_player(f)
+      if p:
+        if p.id == player_id:
+          self.log.debug("Found id %s in %s, returning %s" % (player_id,f,p.name))
+          return p
+    
+    return None
     
   def _read_player(self,filename):
     """Read a player object from a file. The file should be verified as existing before this is called."""

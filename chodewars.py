@@ -46,6 +46,11 @@ class BaseHandler(tornado.web.RequestHandler):
     u'name': u'Matthew Parlette'}"""
     if not user_json: return None
     return tornado.escape.json_decode(user_json)
+  
+  def get_current_player(self):
+    if not self.current_user: return None
+    if not game: return None
+    return game.get_player_by_id(self.current_user['email'])
 
 class MainHandler(BaseHandler):
   @tornado.web.authenticated
@@ -56,6 +61,7 @@ class MainHandler(BaseHandler):
       header_text = "Heading",
       footer_text = "Chodewars",
       user = self.current_user,
+      player = self.get_current_player(),
     )
 
 class LoginHandler(BaseHandler, tornado.auth.GoogleMixin):
