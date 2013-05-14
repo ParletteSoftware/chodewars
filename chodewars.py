@@ -9,17 +9,21 @@ import argparse
 
 from tornado.options import define,options
 from chodewars.game import Game
+from chodewars.player import Player
 
 define("port", default=9000, help="run on the given port", type=int)
 
 version = "0.0"
+
+game = None
 
 class Application(tornado.web.Application):
   def __init__(self):
     handlers=[
       (r"/", MainHandler),
       (r"/login", LoginHandler),
-      (r"/logout", LogoutHandler)
+      (r"/logout", LogoutHandler),
+      (r"/add/([\w]*)", AddHandler),
     ]
     
     settings = dict(
@@ -72,6 +76,30 @@ class LogoutHandler(BaseHandler):
   def get(self):
     self.clear_cookie("user")
     self.write("You are now logged out")
+
+class AddHandler(BaseHandler):
+  #@tornado.web.authenticated
+  def get(self,add_type):
+    self.render(
+      "add.html",
+      page_title = "Add Something",
+      header_text = "Create",
+      footer_text = "Chodewars",
+      user = self.current_user,
+      add_type = add_type,
+    )
+  
+  def post(self,add_type):
+    name = self.get_argument('name','')
+    print "Creating new player %s..." % name
+    if game:
+      if game.add_player(Player(self.current_user['email'],name)):
+        print "Player %s created" % name
+      else:
+        print "Error creating player %s" % name
+    else:
+      print "Game is not initialized!"
+    self.redirect("/")
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Process command line options.')
