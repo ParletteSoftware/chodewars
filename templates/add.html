@@ -2,7 +2,7 @@
 
 {% block toolbar %}
   <div class="right">
-    {{ user['name'] }} 
+    {{ "test" #user['name'] }} 
     <a href="/logout" id="logout_button">Logout</a>
   </div>
 {% end %}
@@ -14,11 +14,15 @@
 {% end %}
 
 {% block body %}
-  {% if player %}
-    <p>Welcome {{player.name}}</p>
-  {% else %}
-    <p>Welcome. You will need to <a href="/add/player">create a player</a> before proceeding.</p>
+  <div class="add">
+  {% if add_type == "player" %}
+    <form id="add_player" action="/add/player" method="post">
+      <label for="name">Player Name</label>
+      <input type="text" name="name" placeholder="Name"/>
+      <input type="submit" value="Create Player"/>
+    </form>
   {% end %}
+  </div>
 {% end %}
 
 {% block footer %}
