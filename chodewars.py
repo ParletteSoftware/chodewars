@@ -50,7 +50,13 @@ class BaseHandler(tornado.web.RequestHandler):
   def get_current_player(self):
     if not self.current_user: return None
     if not game: return None
-    return game.get_player_by_id(self.current_user['email'])
+    if 'email' in self.current_user:
+      return game.get_player_by_id(self.current_user['email'])
+    else:
+      #If email doesn't exist in the cookie, then it needs to be refreshed
+      self.clear_cookie('user')
+      self.redirect("/")
+    return None
 
 class MainHandler(BaseHandler):
   @tornado.web.authenticated
