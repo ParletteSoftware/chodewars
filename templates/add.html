@@ -1,0 +1,30 @@
+{% extends "main.html" %}
+
+{% block toolbar %}
+  <div class="right">
+    {{ "test" #user['name'] }} 
+    <a href="/logout" id="logout_button">Logout</a>
+  </div>
+{% end %}
+
+{% block header %}
+  <hr>
+	<h1>{{ header_text }}</h1>
+  <hr>
+{% end %}
+
+{% block body %}
+  <div class="add">
+  {% if add_type == "player" %}
+    <form id="add_player" action="/add/player" method="post">
+      <label for="name">Player Name</label>
+      <input type="text" name="name" placeholder="Name"/>
+      <input type="submit" value="Create Player"/>
+    </form>
+  {% end %}
+  </div>
+{% end %}
+
+{% block footer %}
+		<p>{{ footer_text }}<br><a href='https://github.com/ChodeGames/chodewars'>source</a></p>
+{% end %} 
