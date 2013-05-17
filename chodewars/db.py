@@ -2,6 +2,7 @@ import os
 import logging
 
 from player import Player
+from cluster import Cluster
 
 class Database(object):
   """This is a base class which defines the methods that need to be implemented for database operations.
@@ -67,6 +68,14 @@ class Database(object):
   
   def get_player_by_id(self,player_id):
     """Retrieve a player account by id."""
+    return None
+  
+  def add_cluster(self,cluster):
+    """Add a cluster to the database."""
+    pass
+  
+  def get_cluster(self,cluster_name):
+    """Retrieve a cluster."""
     return None
   
   def get_sector(self,sector = None):
@@ -182,11 +191,12 @@ class FlatFileDatabase(Database):
   def get_player_by_id(self,player_id):
     """Go through each .player file to find the specified id."""
     for f in os.listdir(self.path):
-      p = self._read_player(f)
-      if p:
-        if p.id == player_id:
-          self.log.debug("Found id %s in %s, returning %s" % (player_id,f,p.name))
-          return p
+      if f.endswith(".player"):
+        p = self._read_player(f)
+        if p:
+          if p.id == player_id:
+            self.log.debug("Found id %s in %s, returning %s" % (player_id,f,p.name))
+            return p
     
     return None
     
@@ -201,3 +211,62 @@ class FlatFileDatabase(Database):
       return Player(id,name)
     self.log.error("_read_player(): Error opening %s for reading" % os.path.join(self.path,filename))
     return None
+  
+  def add_cluster(self,cluster):
+    """Create a directory for this cluster if it doesn't already exist. Return the created cluster."""
+    if self.db_exists():
+      loaded_cluster = self.get_cluster(cluster.name)
+      if loaded_cluster is None:
+        if self._write_cluster(cluster,"%s.cluster" % cluster.name):
+          self.log.debug("add_cluster(): Cluster %s successfully added" % cluster.name)
+          return cluster
+        else:
+          self.log.error("add_cluster(): Error writing to cluster file")
+          return None
+      else:
+        self.log.debug("add_cluster(): Cluster already exists, returning cluster %s as loaded from file" % loaded_cluster.name)
+        return loaded_cluster
+    else:
+      self.log.error("add_cluster(): Database does not exist, aborting...")
+      return None
+  
+  def _write_cluster(self,cluster,filename):
+    """Write a cluster object to a file, overwriting what is there."""
+    self.log.debug("_write_cluster(): Opening %s for writing" % os.path.join(self.path,filename))
+    f = open(os.path.join(self.path,filename),'w')
+    with f:
+      f.write("%s\n" % cluster.name)
+      f.write("%s\n" % cluster.x)
+      f.write("%s\n" % cluster.y)
+      f.close()
+      return True
+    self.log.error("_write_cluster(): Error opening %s for writing" % os.path.join(self.path,filename))
+    return False
+  
+  def get_cluster(self,cluster_name):
+    """Return a cluster if it exists, or None if it does not."""
+    if self.db_exists():
+      cluster_file_path = os.path.join(self.path,"%s.cluster" % cluster_name)
+      if os.path.exists(cluster_file_path):
+        self.log.debug("get_cluster(): Cluster file %s was found, calling _read_cluster()" % cluster_file_path)
+        return self._read_cluster("%s.cluster" % cluster_name)
+      else:
+        self.log.debug("get_cluster(): Cluster file %s was not found, returning None" % cluster_file_path)
+        return None
+    else:
+      self.log.error("get_cluster(): Database does not exist, aborting...")
+      return None
+  
+  def _read_cluster(self,filename):
+    """Read a cluster file into a new Cluster object."""
+    self.log.debug("_read_cluster(): Opening %s for reading" % os.path.join(self.path,filename))
+    f = open(os.path.join(self.path,filename),'r')
+    with f:
+      name = f.readline().strip()
+      x = f.readline().strip()
+      y = f.readline().strip()
+      f.close()
+      return Cluster(name,x,y)
+    self.log.error("_read_cluster(): Error opening %s for reading" % os.path.join(self.path,filename))
+    return None
+  

@@ -121,7 +121,7 @@ if __name__ == "__main__":
   
   print "Creating game object..."
   game = Game()
-  if game.load_config() and game.connect_db():
+  if game:
     print "...ok"
   else:
     print "error initializing game"
