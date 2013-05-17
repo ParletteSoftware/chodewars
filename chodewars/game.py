@@ -82,7 +82,7 @@ class Game(object):
       if self.clusters[c]:
         self.log.debug("Cluster %s has been loaded" % c)
       else:
-        self.log.debug("...error")
+        self.log.error("Cluster %s was not successfully loaded. This should be fixed before proceeding. See the logfile for details." % c)
     if self.clusters:
       self.log.debug("Clusters initialized: %s" % str(self.clusters))
     else:
