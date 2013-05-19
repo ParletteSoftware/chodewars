@@ -1,5 +1,6 @@
 import os
 import logging
+import random
 
 from player import Player
 from cluster import Cluster
@@ -77,10 +78,14 @@ class Database(object):
   def get_cluster(self,cluster_name):
     """Retrieve a cluster."""
     return None
+    
+  def add_sector(self,cluster,sector):
+    """Add a sector to the given cluster."""
+    return None
   
-  def get_sector(self,sector = None):
+  def get_sector(self,cluster,sector_id):
     """Retrieve a list of all items in a sector."""
-    pass
+    return None
   
 class FlatFileDatabase(Database):
   def db_exists(self):
@@ -144,6 +149,53 @@ class FlatFileDatabase(Database):
     else:
       self.log.error("FlatFileDatabase instance variable 'path' is not defined")
       return False
+  
+  def _read_file(self,filename):
+    """Read an object from a file. The file should be verified as existing before this is called."""
+    self.log.debug("_read_file(): Opening %s for reading" % os.path.join(self.path,filename))
+    f = open(os.path.join(self.path,filename),'r')
+    extension = split(filename,'.')[1]
+    self.log.debug("_read_file(): Extension for %s read as %s" % (filename,extension))
+    with f:
+      if extension == "player":
+        id = f.readline().strip()
+        name = f.readline().strip()
+        f.close()
+        return Player(id,name)
+      if extension == "cluster":
+        pass
+      if extension == "sector":
+        id = split(filename,'.')[0]
+        f.close()
+        return Sector(id)
+    self.log.error("_read_file(): Error opening %s for reading" % os.path.join(self.path,filename))
+    return None
+  
+  def _write_file(self,obj,filename):
+    """Wrtie the player object to file, overwriting whatever is there."""
+    object_class = obj.__class__.__name__
+    
+    if object_class == "Sector":
+      #For a sector, we need to verify that the cluster dir exists before proceeding
+      self.log.debug("_write_file(): Verifying that cluster dir %s exists" % obj.cluster.name)
+      self._verify_cluster_dir(obj.cluster)
+    
+    self.log.debug("_write_file(): Opening %s for writing" % os.path.join(self.path,filename))
+    f = open(os.path.join(self.path,filename),'w')
+    with f:
+      self.log.debug("_write_file(): obj parameter type is %s" % object_class)
+      if object_class == "Player":
+        f.write("%s\n" % obj.id)
+        f.write("%s\n" % obj.name)
+        f.close()
+        return True
+      if object_class == "Sector":
+        f.write("%s\n" % obj.cluster.name)
+        f.write("%s\n" % obj.id)
+        f.close()
+        return True
+    self.log.error("_write_file(): Error opening %s for writing" % os.path.join(self.path,filename))
+    return False
   
   def add_player(self,player):
     """Create a file for the player if it doesn't already exist."""
@@ -218,7 +270,10 @@ class FlatFileDatabase(Database):
       loaded_cluster = self.get_cluster(cluster.name)
       if loaded_cluster is None:
         if self._write_cluster(cluster,"%s.cluster" % cluster.name):
-          self.log.debug("add_cluster(): Cluster %s successfully added" % cluster.name)
+          self.log.debug("add_cluster(): Cluster file %s.cluster successfully added" % cluster.name)
+          #Make a directory with the cluster's name
+          if self._verify_cluster_dir(cluster):
+            self.log.debug("add_cluster(): cluster directory exists")
           return cluster
         else:
           self.log.error("add_cluster(): Error writing to cluster file")
@@ -229,6 +284,18 @@ class FlatFileDatabase(Database):
     else:
       self.log.error("add_cluster(): Database does not exist, aborting...")
       return None
+  
+  def _verify_cluster_dir(self,cluster):
+    """Verify if a cluster dir exists. If not, then create it. Return False if there is a problem creating the dir."""
+    cluster_path = os.path.join(self.path,cluster.name)
+    if os.path.exists(cluster_path): return True
+    self.log.debug("Cluster directory does not exist, creating %s" % cluster_path)
+    if os.makedirs(cluster_path):
+      return True
+    
+    self.log.error("There was an error creating the cluster directory %s" % cluster_path)
+    return False
+      
   
   def _write_cluster(self,cluster,filename):
     """Write a cluster object to a file, overwriting what is there."""
@@ -269,4 +336,37 @@ class FlatFileDatabase(Database):
       return Cluster(name,x,y)
     self.log.error("_read_cluster(): Error opening %s for reading" % os.path.join(self.path,filename))
     return None
+  
+  def add_sector(self,sector):
+    """Add a sector to the a cluster."""
+    if self.db_exists():
+      loaded_sector = self.get_sector(sector.cluster,sector.id)
+      if loaded_sector is None:
+        sector_filename = os.path.join(sector.cluster.name,str(sector.id))
+        if self._write_file(sector,"%s.sector" % sector_filename):
+          self.log.debug("add_sector(): Sector file %s.sector successfully added to cluster dir %s" % (sector.id,sector.cluster.name))
+          return sector
+        else:
+          self.log.error("add_sector(): Error writing to sector file")
+          return None
+      else:
+        self.log.debug("add_sector(): Sector already exists, returning sector %s/%s as loaded from file" % (loaded_sector.cluster.name,loaded_sector.id))
+        return loaded_sector
+    else:
+      self.log.error("add_sector(): Database does not exist, aborting...")
+      return None
+  
+  def get_sector(self,cluster,sector_id):
+    """Retrieve a list of all items in a sector."""
+    if self.db_exists():
+      sector_file_path = os.path.join(self.path,cluster.name,"%s.cluster" % sector_id)
+      if os.path.exists(sector_file_path):
+        self.log.debug("get_sector(): Sector file %s was found, calling _read_file()" % sector_file_path)
+        return self._read_file("%s.sector" % os.path.join(cluster.name,str(sector_id)))
+      else:
+        self.log.debug("get_sector(): Sector file %s was not found, returning None" % sector_file_path)
+        return None
+    else:
+      self.log.error("get_sector(): Database does not exist, aborting...")
+      return None
   

@@ -102,15 +102,25 @@ class AddHandler(BaseHandler):
     )
   
   def post(self,add_type):
-    name = self.get_argument('name','')
-    print "Creating new player %s..." % name
     if game:
-      if game.add_player(Player(self.current_user['email'],name)):
-        print "Player %s created" % name
+      if add_type == "player":
+        name = self.get_argument('name','')
+        print "Creating new player %s..." % name
+        if game.add_player(Player(self.current_user['email'],name)):
+          print "Player %s created" % name
+        else:
+          print "Error creating player %s" % name
       else:
-        print "Error creating player %s" % name
+        if add_type == "home":
+          player = self.get_current_player()
+          print "Creating home sector..."
+          if game.assign_home_sector(player):
+            print "...ok"
+          else:
+            print "Error assigning home sector for %s" % player
     else:
       print "Game is not initialized!"
+        
     self.redirect("/")
 
 if __name__ == "__main__":

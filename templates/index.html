@@ -16,6 +16,11 @@
 {% block body %}
   {% if player %}
     <p>Welcome {{player.name}}</p>
+    {% if player.cluster and player.sector %}
+      <p>ready to play!</p>
+    {% else %}
+      <p>When you are ready, you can <a href="/add/home">establish your home sector</a> and get started!</p>
+    {% end %}
   {% else %}
     <p>Welcome. You will need to <a href="/add/player">create a player</a> before proceeding.</p>
   {% end %}

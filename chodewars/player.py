@@ -10,6 +10,10 @@ class Player(object):
     #The player's name (to be displayed in game)
     self.name = name
     
+    #Player's location
+    self.cluster = None
+    self.sector = None
+    
   def to_dict(self):
     return {"id":self.id, "name":self.name}
     

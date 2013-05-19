@@ -1,8 +1,10 @@
 import logging
 import db
+import random
 
 from player import Player
 from cluster import Cluster
+from sector import Sector
 
 class Game(object):
   def __init__(self):
@@ -87,3 +89,29 @@ class Game(object):
       self.log.debug("Clusters initialized: %s" % str(self.clusters))
     else:
       self.log.info("No clusters defined, check the config.")
+      
+  def _find_empty_sector(self):
+    """Return a random empty sector."""
+    #Pick a cluster
+    random_cluster = self.clusters[random.choice(self.clusters.keys())]
+    self.log.debug("Random cluster selected as %s" % random_cluster)
+    
+    empty_sector = None
+    while not empty_sector:
+      random_sector_id = random.randint(0,int(random_cluster.x)*int(random_cluster.y))
+      random_sector = self.db.get_sector(random_cluster,random_sector_id)
+      if not random_sector:
+        empty_sector = Sector(random_cluster,random_sector_id)
+    self.log.debug("Empty sector found: %s" % empty_sector)
+    return empty_sector
+  
+  def assign_home_sector(self,player):
+    """Find an unused sector and assign this player to it."""
+    home_sector = self._find_empty_sector()
+    self.log.debug("assign_home_sector(): Adding sector %s" % home_sector.id)
+    self.db.add_sector(home_sector)
+    self.log.debug("assign_home_sector(): Moving player to sector %s" % home_sector.id)
+    self.move_player(player,home_sector)
+    
+  def move_player(self,player,sector):
+    pass
