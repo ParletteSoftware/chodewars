@@ -87,6 +87,14 @@ class Database(object):
     """Retrieve a list of all items in a sector."""
     return None
   
+  def add_planet(self,planet):
+    """Save a planet objet to the database. Planet names must be unique."""
+    return None
+  
+  def get_planet(self,planet_name):
+    """Retrieve a planet from the database."""
+    return None
+  
 class FlatFileDatabase(Database):
   def db_exists(self):
     if self.path:
@@ -168,6 +176,11 @@ class FlatFileDatabase(Database):
         id = split(filename,'.')[0]
         f.close()
         return Sector(id)
+      if extension == "planet":
+        cluster = f.readline().strip()
+        sector_id = f.readline().strip()
+        name = f.readline().strip()
+        return Planet(Sector(Cluster(cluster_name),sector_id),name)
     self.log.error("_read_file(): Error opening %s for reading" % os.path.join(self.path,filename))
     return None
   
@@ -193,6 +206,11 @@ class FlatFileDatabase(Database):
         f.write("%s\n" % obj.cluster.name)
         f.write("%s\n" % obj.id)
         f.close()
+        return True
+      if object_class == "Planet":
+        f.write("%s\n" % obj.sector.cluster.name)
+        f.write("%s\n" % obj.sector.id)
+        f.write("%s\n" % obj.name)
         return True
     self.log.error("_write_file(): Error opening %s for writing" % os.path.join(self.path,filename))
     return False
@@ -370,3 +388,34 @@ class FlatFileDatabase(Database):
       self.log.error("get_sector(): Database does not exist, aborting...")
       return None
   
+  def add_planet(self,planet):
+    """Save a planet objet to the database. Planet names must be unique."""
+    if self.db_exists():
+      loaded_planet = self.get_planet(planet.name)
+      if loaded_planet is None:
+        if self._write_file(planet,"%s.planet" % planet.name):
+          self.log.debug("add_planet(): Planet file %s.planet successfully added" % planet.name)
+          return True
+        else:
+          self.log.error("add_planet(): Erro writing planet to file")
+          return False
+      else:
+        self.log.debug("add_planet(): Planet already exists, returning False")
+        return False
+    else:
+      self.log.debug("add_planet(): Database does not exist, aborting...")
+      return False
+  
+  def get_planet(self,planet_name):
+    """Retrieve a planet from the database."""
+    if self.db_exists():
+      planet_file_path = os.path.join(self.path,"%s.planet" % planet_name)
+      if os.path.exists(planet_file_path):
+        self.log.debug("get_planet(): Planet file %s was found, calling _read_file()" % planet_file_path)
+        return self._read_file("%s.planet" % planet_name)
+      else:
+        self.log.debug("get_planet(): Planet file %s was not found, returning None" % planet_file_path)
+        return None
+    else:
+      self.log.error("get_planet(): Database does not exist, aborting...")
+      return None
