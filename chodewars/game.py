@@ -5,6 +5,7 @@ import random
 from player import Player
 from cluster import Cluster
 from sector import Sector
+from planet import Planet
 
 class Game(object):
   def __init__(self):
@@ -105,13 +106,20 @@ class Game(object):
     self.log.debug("Empty sector found: %s" % empty_sector)
     return empty_sector
   
-  def assign_home_sector(self,player):
+  def assign_home_sector(self,player,planet_name):
     """Find an unused sector and assign this player to it."""
     home_sector = self._find_empty_sector()
     self.log.debug("assign_home_sector(): Adding sector %s" % home_sector.id)
-    self.db.add_sector(home_sector)
-    self.log.debug("assign_home_sector(): Moving player to sector %s" % home_sector.id)
-    self.move_player(player,home_sector)
+    if self.db.add_sector(home_sector):
+      planet = Planet(home_sector,planet_name)
+      self.log.debug("assign_home_sector(): Adding planet %s to database" % planet)
+      self.db.add_planet(planet)
+      self.log.debug("assign_home_sector(): Moving player to sector %s" % home_sector.id)
+      self.move_player(player,home_sector)
+      return True
+    else:
+      self.log.error("assign_home_sector(): db.add_sector() returned None, so the sector was not successfully created")
+      return False
     
   def move_player(self,player,sector):
     pass

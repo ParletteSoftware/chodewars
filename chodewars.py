@@ -10,6 +10,7 @@ import argparse
 from tornado.options import define,options
 from chodewars.game import Game
 from chodewars.player import Player
+from chodewars.planet import Planet
 
 define("port", default=9000, help="run on the given port", type=int)
 
@@ -112,12 +113,16 @@ class AddHandler(BaseHandler):
           print "Error creating player %s" % name
       else:
         if add_type == "home":
-          player = self.get_current_player()
-          print "Creating home sector..."
-          if game.assign_home_sector(player):
-            print "...ok"
+          planet_name = self.get_argument('planet_name',None)
+          if planet_name:
+            player = self.get_current_player()
+            print "Creating home sector..."
+            if game.assign_home_sector(player,planet_name):
+              print "...ok"
+            else:
+              print "Error assigning home sector for %s" % str(player)
           else:
-            print "Error assigning home sector for %s" % player
+            print "planet_name was not received, nothing was created for this player"
     else:
       print "Game is not initialized!"
         
