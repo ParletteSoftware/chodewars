@@ -173,7 +173,7 @@ class FlatFileDatabase(Database):
     """Read an object from a file. The file should be verified as existing before this is called."""
     self.log.debug("_read_file(): Opening %s for reading" % os.path.join(self.path,filename))
     f = open(os.path.join(self.path,filename),'r')
-    extension = split(filename,'.')[1]
+    extension = filename.split('.')[-1]
     self.log.debug("_read_file(): Extension for %s read as %s" % (filename,extension))
     with f:
       if extension == "player":
