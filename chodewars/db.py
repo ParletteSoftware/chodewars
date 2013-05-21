@@ -59,6 +59,10 @@ class Database(object):
     """Return a boolean to signify if the database is empty (and requires a big bang)."""
     pass
   
+  def save_object(self,obj):
+    """Save a game object to the database."""
+    pass
+  
   def add_player(self,player):
     """Add a player to the database."""
     pass
@@ -157,6 +161,13 @@ class FlatFileDatabase(Database):
     else:
       self.log.error("FlatFileDatabase instance variable 'path' is not defined")
       return False
+  
+  def save_object(self,obj):
+    """Save a game object to the database."""
+    object_class = obj.__class__.__name__
+    
+    if object_class == "Player":
+      self._write_file(obj,"%s.player" % obj.name)
   
   def _read_file(self,filename):
     """Read an object from a file. The file should be verified as existing before this is called."""
