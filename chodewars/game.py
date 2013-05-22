@@ -122,7 +122,6 @@ class Game(object):
       return False
     
   def move_player(self,player,sector):
-    player.cluster = sector.cluster
     player.sector = sector
     if self.db.save_object(player):
       return True

@@ -4,6 +4,8 @@ import random
 
 from player import Player
 from cluster import Cluster
+from planet import Planet
+from sector import Sector
 
 class Database(object):
   """This is a base class which defines the methods that need to be implemented for database operations.
@@ -179,19 +181,31 @@ class FlatFileDatabase(Database):
       if extension == "player":
         id = f.readline().strip()
         name = f.readline().strip()
+        cluster_name = f.readline().strip()
+        sector_id = f.readline().strip()
         f.close()
-        return Player(id,name)
+        cluster = self.get_cluster(cluster_name)
+        self.log.debug("_read_file(): Loaded cluster %s while loading player %s" % (cluster_name,name))
+        sector = self.get_sector(cluster,sector_id) if cluster else None
+        self.log.debug("_read_file(): Loaded sector %s-%s while loading player %s" % (cluster_name,sector_id,name))
+        return Player(id,name,sector) if sector else None
       if extension == "cluster":
         pass
       if extension == "sector":
-        id = split(filename,'.')[0]
+        cluster_name = f.readline().strip()
+        #This looks strange because the path for the sector has the cluster in it
+        id = filename.split('/')[-1].split('.')[0]
         f.close()
-        return Sector(id)
+        cluster = self.get_cluster(cluster_name)
+        return Sector(cluster,id) if cluster else None
       if extension == "planet":
-        cluster = f.readline().strip()
+        cluster_name = f.readline().strip()
         sector_id = f.readline().strip()
         name = f.readline().strip()
-        return Planet(Sector(Cluster(cluster_name),sector_id),name)
+        f.close()
+        cluster = self.get_cluster(cluster_name)
+        sector = self.get_sector(cluster,sector_id)
+        return Planet(sector,name) if sector else None
     self.log.error("_read_file(): Error opening %s for reading" % os.path.join(self.path,filename))
     return None
   
@@ -211,6 +225,8 @@ class FlatFileDatabase(Database):
       if object_class == "Player":
         f.write("%s\n" % obj.id)
         f.write("%s\n" % obj.name)
+        f.write("%s\n" % obj.sector.cluster.name if obj.sector else str(None))
+        f.write("%s\n" % obj.sector.id if obj.sector else str(None))
         f.close()
         return True
       if object_class == "Sector":
@@ -260,8 +276,8 @@ class FlatFileDatabase(Database):
     if self.db_exists():
       player_file_path = os.path.join(self.path,"%s.player" % player_name)
       if os.path.exists(player_file_path):
-        self.log.debug("get_player(): Player file %s was found, calling _read_player()" % player_file_path)
-        return self._read_player("%s.player" % player_name)
+        self.log.debug("get_player(): Player file %s was found, calling _read_file()" % player_file_path)
+        return self._read_file("%s.player" % player_name)
       else:
         self.log.debug("get_player(): Player file %s was not found, returning None" % player_file_path)
         return None
@@ -273,12 +289,11 @@ class FlatFileDatabase(Database):
     """Go through each .player file to find the specified id."""
     for f in os.listdir(self.path):
       if f.endswith(".player"):
-        p = self._read_player(f)
+        p = self._read_file(f)
         if p:
           if p.id == player_id:
             self.log.debug("Found id %s in %s, returning %s" % (player_id,f,p.name))
             return p
-    
     return None
     
   def _read_player(self,filename):
@@ -387,8 +402,9 @@ class FlatFileDatabase(Database):
   
   def get_sector(self,cluster,sector_id):
     """Retrieve a list of all items in a sector."""
+    if not cluster: return None
     if self.db_exists():
-      sector_file_path = os.path.join(self.path,cluster.name,"%s.cluster" % sector_id)
+      sector_file_path = os.path.join(self.path,cluster.name,"%s.sector" % sector_id)
       if os.path.exists(sector_file_path):
         self.log.debug("get_sector(): Sector file %s was found, calling _read_file()" % sector_file_path)
         return self._read_file("%s.sector" % os.path.join(cluster.name,str(sector_id)))

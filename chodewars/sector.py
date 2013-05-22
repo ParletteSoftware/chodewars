@@ -6,4 +6,4 @@ class Sector(object):
     self.cluster = cluster
     
   def __repr__(self):
-    return "%s - %s" % (self.cluster,str(id))
+    return "%s-%s" % (self.cluster.name,str(self.id))
