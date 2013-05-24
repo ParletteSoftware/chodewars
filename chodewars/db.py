@@ -194,7 +194,9 @@ class FlatFileDatabase(Database):
           self.log.debug("_read_file(): Loaded sector %s-%s while loading player %s" % (cluster_name,sector_id,name))
         else:
           self.log.debug("_read_file(): Sector could not be loaded from player file")
-        return Player(id,name,sector) if sector else None
+        p = Player(id,name,sector)
+        self.log.debug("_read_file(): Returning Player object %s" % str(p))
+        return p
       if extension == "cluster":
         pass
       if extension == "sector":
@@ -294,13 +296,19 @@ class FlatFileDatabase(Database):
   
   def get_player_by_id(self,player_id):
     """Go through each .player file to find the specified id."""
+    self.log.debug("get_player_by_id(): Searching for player with id %s" % player_id)
     for f in os.listdir(self.path):
       if f.endswith(".player"):
         p = self.get_player(f.split('.')[0])
         if p:
+          self.log.debug("get_player_by_id(): Player returned from get_player('%s.player') was %s" % (f,str(p.to_dict())))
           if p.id == player_id:
-            self.log.debug("Found id %s in %s, returning %s" % (player_id,f,p.name))
+            self.log.debug("get_player_by_id(): Found id %s in %s, returning %s" % (player_id,f,p.name))
             return p
+        else:
+          self.log.debug("get_player_by_id(): Player returned from get_player('%s.player') was None" % f)
+    
+    self.log.debug("Player id %s was not found in the database, returning None" % player_id)
     return None
     
   def _read_player(self,filename):
