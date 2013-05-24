@@ -10,6 +10,7 @@ import argparse
 from tornado.options import define,options
 from chodewars.game import Game
 from chodewars.player import Player
+from chodewars.planet import Planet
 
 define("port", default=9000, help="run on the given port", type=int)
 
@@ -61,13 +62,15 @@ class BaseHandler(tornado.web.RequestHandler):
 class MainHandler(BaseHandler):
   @tornado.web.authenticated
   def get(self):
+    player = self.get_current_player()
+    if player: print "player loaded as %s" % str(player.to_dict())
     self.render(
       "index.html",
       page_title = "Here's a page",
       header_text = "Heading",
       footer_text = "Chodewars",
       user = self.current_user,
-      player = self.get_current_player(),
+      player = player,
     )
 
 class LoginHandler(BaseHandler, tornado.auth.GoogleMixin):
@@ -102,15 +105,29 @@ class AddHandler(BaseHandler):
     )
   
   def post(self,add_type):
-    name = self.get_argument('name','')
-    print "Creating new player %s..." % name
     if game:
-      if game.add_player(Player(self.current_user['email'],name)):
-        print "Player %s created" % name
+      if add_type == "player":
+        name = self.get_argument('name','')
+        print "Creating new player %s..." % name
+        if game.add_player(Player(self.current_user['email'],name)):
+          print "Player %s created" % name
+        else:
+          print "Error creating player %s" % name
       else:
-        print "Error creating player %s" % name
+        if add_type == "home":
+          planet_name = self.get_argument('planet_name',None)
+          if planet_name:
+            player = self.get_current_player()
+            print "Creating home sector..."
+            if game.assign_home_sector(player,planet_name):
+              print "...ok"
+            else:
+              print "Error assigning home sector for %s" % str(player)
+          else:
+            print "planet_name was not received, nothing was created for this player"
     else:
       print "Game is not initialized!"
+        
     self.redirect("/")
 
 if __name__ == "__main__":
@@ -121,7 +138,7 @@ if __name__ == "__main__":
   
   print "Creating game object..."
   game = Game()
-  if game.load_config() and game.connect_db():
+  if game:
     print "...ok"
   else:
     print "error initializing game"
