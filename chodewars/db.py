@@ -185,9 +185,15 @@ class FlatFileDatabase(Database):
         sector_id = f.readline().strip()
         f.close()
         cluster = self.get_cluster(cluster_name)
-        self.log.debug("_read_file(): Loaded cluster %s while loading player %s" % (cluster_name,name))
+        if cluster:
+          self.log.debug("_read_file(): Loaded cluster %s while loading player %s" % (cluster_name,name))
+        else:
+          self.log.debug("_read_file(): Cluster could not be loaded from player file")
         sector = self.get_sector(cluster,sector_id) if cluster else None
-        self.log.debug("_read_file(): Loaded sector %s-%s while loading player %s" % (cluster_name,sector_id,name))
+        if sector:
+          self.log.debug("_read_file(): Loaded sector %s-%s while loading player %s" % (cluster_name,sector_id,name))
+        else:
+          self.log.debug("_read_file(): Sector could not be loaded from player file")
         return Player(id,name,sector) if sector else None
       if extension == "cluster":
         pass
@@ -274,6 +280,7 @@ class FlatFileDatabase(Database):
   def get_player(self,player_name):
     """Verify a player file exists and load that Player object."""
     if self.db_exists():
+      self.log.debug("get_player(): Loading player %s" % player_name)
       player_file_path = os.path.join(self.path,"%s.player" % player_name)
       if os.path.exists(player_file_path):
         self.log.debug("get_player(): Player file %s was found, calling _read_file()" % player_file_path)
@@ -289,7 +296,7 @@ class FlatFileDatabase(Database):
     """Go through each .player file to find the specified id."""
     for f in os.listdir(self.path):
       if f.endswith(".player"):
-        p = self._read_file(f)
+        p = self.get_player(f.split('.')[0])
         if p:
           if p.id == player_id:
             self.log.debug("Found id %s in %s, returning %s" % (player_id,f,p.name))
@@ -357,6 +364,7 @@ class FlatFileDatabase(Database):
   def get_cluster(self,cluster_name):
     """Return a cluster if it exists, or None if it does not."""
     if self.db_exists():
+      self.log.debug("get_cluster(): Retrieving cluster %s" % cluster_name)
       cluster_file_path = os.path.join(self.path,"%s.cluster" % cluster_name)
       if os.path.exists(cluster_file_path):
         self.log.debug("get_cluster(): Cluster file %s was found, calling _read_cluster()" % cluster_file_path)
@@ -404,6 +412,7 @@ class FlatFileDatabase(Database):
     """Retrieve a list of all items in a sector."""
     if not cluster: return None
     if self.db_exists():
+      self.log.debug("get_sector(): Retrieving sector %s in cluster %s" % (str(cluster),sector_id))
       sector_file_path = os.path.join(self.path,cluster.name,"%s.sector" % sector_id)
       if os.path.exists(sector_file_path):
         self.log.debug("get_sector(): Sector file %s was found, calling _read_file()" % sector_file_path)
@@ -436,6 +445,7 @@ class FlatFileDatabase(Database):
   def get_planet(self,planet_name):
     """Retrieve a planet from the database."""
     if self.db_exists():
+      self.log.debug("get_planet(): Retriving planet %s" % planet_name)
       planet_file_path = os.path.join(self.path,"%s.planet" % planet_name)
       if os.path.exists(planet_file_path):
         self.log.debug("get_planet(): Planet file %s was found, calling _read_file()" % planet_file_path)

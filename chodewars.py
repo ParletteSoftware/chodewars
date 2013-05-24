@@ -63,7 +63,7 @@ class MainHandler(BaseHandler):
   @tornado.web.authenticated
   def get(self):
     player = self.get_current_player()
-    if player: print "player loaded as %s" % str(player.to_dict)
+    if player: print "player loaded as %s" % str(player.to_dict())
     self.render(
       "index.html",
       page_title = "Here's a page",
