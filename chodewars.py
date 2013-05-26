@@ -64,6 +64,10 @@ class MainHandler(BaseHandler):
   def get(self):
     player = self.get_current_player()
     if player: print "player loaded as %s" % str(player.to_dict())
+    
+    for line in game.visualize_cluster(player):
+      print "%s\n" % line
+    
     self.render(
       "index.html",
       page_title = "Here's a page",

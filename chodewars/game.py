@@ -127,3 +127,49 @@ class Game(object):
       return True
     else:
       return False
+  
+  def visualize_cluster(self,player):
+    """Get a visual map for the current cluster of the player."""
+    highlight_sector = player.sector
+    cluster = player.sector.cluster
+    
+    lines = []
+    for y in xrange(0,cluster.y):
+      s = ""
+      for x in xrange(1,cluster.x):
+        s += "%s " % str(x + (y * cluster.y))
+      lines.append(s)
+    return lines
+  
+  def get_available_warps(self,player):
+    """Return a list of sectors available for the player."""
+    sector = player.sector
+    cluster = player.sector.cluster
+    sectors = []
+    
+    #nw
+    
+    
+    #n
+    if sector.id - (cluster.x - 1) > 0:
+      sectors.append(db.get_sector(cluster,(sector.id - (cluster.x - 1))))
+    
+    #ne
+    
+    
+    #e
+    
+    
+    #se
+    
+    
+    #s
+    
+    
+    #sw
+    
+    
+    #w
+    
+    
+    return sectors
