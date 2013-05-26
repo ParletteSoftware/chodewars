@@ -99,7 +99,7 @@ class Game(object):
     
     empty_sector = None
     while not empty_sector:
-      random_sector_id = random.randint(0,int(random_cluster.x)*int(random_cluster.y))
+      random_sector_id = random.randint(1,int(random_cluster.x)*int(random_cluster.y))
       random_sector = self.db.get_sector(random_cluster,random_sector_id)
       if not random_sector:
         empty_sector = Sector(random_cluster,random_sector_id)
@@ -136,7 +136,7 @@ class Game(object):
     lines = []
     for y in xrange(0,cluster.y):
       s = ""
-      for x in xrange(1,cluster.x):
+      for x in xrange(1,cluster.x+1):
         s += "%s " % str(x + (y * cluster.y))
       lines.append(s)
     return lines
