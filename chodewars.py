@@ -68,8 +68,6 @@ class MainHandler(BaseHandler):
     for line in game.visualize_cluster(player):
       print "%s\n" % line
     
-    print game.get_available_warps(player)
-    
     self.render(
       "index.html",
       page_title = "Here's a page",
@@ -77,6 +75,7 @@ class MainHandler(BaseHandler):
       footer_text = "Chodewars",
       user = self.current_user,
       player = player,
+      warps = game.get_available_warps(player)
     )
 
 class LoginHandler(BaseHandler, tornado.auth.GoogleMixin):

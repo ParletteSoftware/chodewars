@@ -18,6 +18,11 @@
     <p>Welcome {{player.name}}</p>
     {% if player.sector %}
       <p>You are currently in sector {{str(player.sector)}}</p>
+      <p>Available Warps: 
+      {% for sector in warps %}
+        <a href="#">{{ sector.id }}</a>
+      {% end %}
+      </p>
     {% else %}
       <p>When you are ready, you can <a href="/add/home">establish your home sector</a> and get started!</p>
     {% end %}
