@@ -85,8 +85,8 @@ class Database(object):
     """Retrieve a cluster."""
     return None
     
-  def add_sector(self,cluster,sector):
-    """Add a sector to the given cluster."""
+  def add_sector(self,sector):
+    """Add a sector to the given cluster. The cluster is pulled from the Sector object."""
     return None
   
   def get_sector(self,cluster,sector_id):
@@ -416,8 +416,10 @@ class FlatFileDatabase(Database):
       self.log.error("add_sector(): Database does not exist, aborting...")
       return None
   
-  def get_sector(self,cluster,sector_id):
-    """Retrieve a list of all items in a sector."""
+  def get_sector(self,cluster,sector_id,add = False):
+    """Retrieve a list of all items in a sector.
+    
+    If add is True, then the sector will be added to the database."""
     if not cluster: return None
     if self.db_exists():
       self.log.debug("get_sector(): Retrieving sector %s in cluster %s" % (str(cluster),sector_id))
@@ -426,8 +428,12 @@ class FlatFileDatabase(Database):
         self.log.debug("get_sector(): Sector file %s was found, calling _read_file()" % sector_file_path)
         return self._read_file("%s.sector" % os.path.join(cluster.name,str(sector_id)))
       else:
-        self.log.debug("get_sector(): Sector file %s was not found, returning None" % sector_file_path)
-        return None
+        if add:
+          self.log.debug("get_sector(): Sector file %s was not found, adding sector via add_sector()" % sector_file_path)
+          return self.add_sector(Sector(cluster,sector_id))
+        else:
+          self.log.debug("get_sector(): Sector file %s was not found, returning None" % sector_file_path)
+          return None
     else:
       self.log.error("get_sector(): Database does not exist, aborting...")
       return None

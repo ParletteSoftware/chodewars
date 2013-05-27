@@ -68,6 +68,8 @@ class MainHandler(BaseHandler):
     for line in game.visualize_cluster(player):
       print "%s\n" % line
     
+    print game.get_available_warps(player)
+    
     self.render(
       "index.html",
       page_title = "Here's a page",

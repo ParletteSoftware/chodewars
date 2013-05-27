@@ -144,32 +144,55 @@ class Game(object):
   def get_available_warps(self,player):
     """Return a list of sectors available for the player."""
     sector = player.sector
+    self.log.debug("Building list of available warps for sector %s" % sector)
     cluster = player.sector.cluster
     sectors = []
     
-    #nw
+    self.log.debug("Calculations: %s mod %s = %s" % (sector.id,cluster.y,sector.id % cluster.y))
     
+    top_row = True if sector.id <= cluster.x else False
+    left_column = True if sector.id % cluster.y == 1 else False
+    bottom_row = True if sector.id >= (cluster.x * cluster.y - cluster.x) else False
+    right_column = True if sector.id % cluster.y == 0 else False
+    
+    #nw
+    if not top_row and not left_column:
+      self.log.debug("Adding Northwest sector to sectors list")
+      sectors.append(self.db.get_sector(cluster,(sector.id - cluster.x - 1),add = True))
     
     #n
-    if sector.id - (cluster.x - 1) > 0:
-      sectors.append(db.get_sector(cluster,(sector.id - (cluster.x - 1))))
+    if not top_row:
+      self.log.debug("Adding North sector to sectors list")
+      sectors.append(self.db.get_sector(cluster,(sector.id - cluster.x),add = True))
     
     #ne
-    
+    if not top_row and not right_column:
+      self.log.debug("Adding Northwest sector to sectors list")
+      sectors.append(self.db.get_sector(cluster,(sector.id - cluster.x + 1),add = True))
     
     #e
-    
+    if not right_column:
+      self.log.debug("Adding East sector to sectors list")
+      sectors.append(self.db.get_sector(cluster,(sector.id + 1),add = True))
     
     #se
-    
+    if not bottom_row and not right_column:
+      self.log.debug("Adding Southeast sector to sectors list")
+      sectors.append(self.db.get_sector(cluster,(sector.id + cluster.x + 1),add = True))
     
     #s
-    
+    if not bottom_row:
+      self.log.debug("Adding South sector to sectors list")
+      sectors.append(self.db.get_sector(cluster,(sector.id + cluster.x),add = True))
     
     #sw
-    
+    if not bottom_row and not left_column:
+      self.log.debug("Adding Southwest sector to sectors list")
+      sectors.append(self.db.get_sector(cluster,(sector.id + cluster.x - 1),add = True))
     
     #w
+    if not left_column:
+      self.log.debug("Adding West sector to sectors list")
+      sectors.append(self.db.get_sector(cluster,(sector.id - 1),add = True))
     
-    
-    return sectors
+    return sorted(sectors, key = lambda sector: sector.id)
