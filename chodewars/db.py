@@ -169,7 +169,9 @@ class FlatFileDatabase(Database):
     object_class = obj.__class__.__name__
     
     if object_class == "Player":
-      self._write_file(obj,"%s.player" % obj.name)
+      return self._write_file(obj,"%s.player" % obj.name)
+    
+    return False
   
   def _read_file(self,filename):
     """Read an object from a file. The file should be verified as existing before this is called."""

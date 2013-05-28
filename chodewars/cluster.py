@@ -7,3 +7,10 @@ class Cluster(object):
   def __repr__(self):
     return "%s (%s x %s)" % (self.name,self.x,self.y)
   
+  def __cmp__(self,other):
+    if self.name == other.name:
+      return 0
+    if self.name < other.name:
+      return -1
+    else:
+      return 1

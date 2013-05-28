@@ -25,6 +25,7 @@ class Application(tornado.web.Application):
       (r"/login", LoginHandler),
       (r"/logout", LogoutHandler),
       (r"/add/([\w]*)", AddHandler),
+      (r"/c/([\w]*)/([\w]*)", CommandHandler),
     ]
     
     settings = dict(
@@ -134,6 +135,21 @@ class AddHandler(BaseHandler):
       print "Game is not initialized!"
         
     self.redirect("/")
+
+class CommandHandler(BaseHandler):
+  def get(self,command,argument):
+    player = self.get_current_player()
+    if game:
+      if command == "move":
+        if argument:
+          game.move_player(player,player.sector.cluster.name,argument)
+    else:
+      self.write("Game not initialized")
+    
+    self.redirect("/")
+  
+  def post(self,command,argument):
+    pass
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Process command line options.')

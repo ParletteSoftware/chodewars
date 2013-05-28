@@ -121,11 +121,19 @@ class Game(object):
       self.log.error("assign_home_sector(): db.add_sector() returned None, so the sector was not successfully created")
       return False
     
-  def move_player(self,player,sector):
-    player.sector = sector
+  def move_player(self,player,cluster_name,sector_id):
+    available_warps = self.get_available_warps(player)
+    sector = self.db.get_sector(self.db.get_cluster(cluster_name),sector_id)
+    if sector in available_warps:
+      self.log.debug("move_player(): Move commmand is valid, moving player %s to sector %s" % (player,sector))
+      player.sector = sector
+    else:
+      self.log.error("move_player(): Sector %s is not in the list of available warps: %s" % (sector.id,str(available_warps)))
     if self.db.save_object(player):
+      self.log.debug("move_player(): Player object saved")
       return True
     else:
+      self.log.error("move_player(): Player object could not be saved")
       return False
   
   def visualize_cluster(self,player):
