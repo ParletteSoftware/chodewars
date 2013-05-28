@@ -25,6 +25,7 @@ class Application(tornado.web.Application):
       (r"/login", LoginHandler),
       (r"/logout", LogoutHandler),
       (r"/add/([\w]*)", AddHandler),
+      (r"/c/([\w]*)/([\w]*)", CommandHandler),
     ]
     
     settings = dict(
@@ -64,6 +65,10 @@ class MainHandler(BaseHandler):
   def get(self):
     player = self.get_current_player()
     if player: print "player loaded as %s" % str(player.to_dict())
+    
+    for line in game.visualize_cluster(player):
+      print "%s\n" % line
+    
     self.render(
       "index.html",
       page_title = "Here's a page",
@@ -71,6 +76,7 @@ class MainHandler(BaseHandler):
       footer_text = "Chodewars",
       user = self.current_user,
       player = player,
+      warps = game.get_available_warps(player)
     )
 
 class LoginHandler(BaseHandler, tornado.auth.GoogleMixin):
@@ -129,6 +135,21 @@ class AddHandler(BaseHandler):
       print "Game is not initialized!"
         
     self.redirect("/")
+
+class CommandHandler(BaseHandler):
+  def get(self,command,argument):
+    player = self.get_current_player()
+    if game:
+      if command == "move":
+        if argument:
+          game.move_player(player,player.sector.cluster.name,argument)
+    else:
+      self.write("Game not initialized")
+    
+    self.redirect("/")
+  
+  def post(self,command,argument):
+    pass
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Process command line options.')
