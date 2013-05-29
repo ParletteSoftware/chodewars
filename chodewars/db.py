@@ -266,7 +266,7 @@ class FlatFileDatabase(Database):
     """Create a file for the player if it doesn't already exist."""
     if self.db_exists():
       if self.get_player(player.name) is None:
-        if self._write_player(player,"%s.player" % player.name):
+        if self.save_object(player):
           self.log.debug("add_player(): Player %s successfully added" % player.name)
           return True
         else:
