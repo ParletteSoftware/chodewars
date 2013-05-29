@@ -172,6 +172,8 @@ class FlatFileDatabase(Database):
       return self._write_file(obj,"%s.player" % obj.name)
     if object_class == "Cluster":
       return self._write_file(obj,"%s.cluster" % obj.name)
+    if object_class == "Sector":
+      return self._write_file(obj,"%s.sector" % os.path.join(obj.cluster.name,str(obj.id)))
     
     return False
   
@@ -365,8 +367,7 @@ class FlatFileDatabase(Database):
     if self.db_exists():
       loaded_sector = self.get_sector(sector.cluster,sector.id)
       if loaded_sector is None:
-        sector_filename = os.path.join(sector.cluster.name,str(sector.id))
-        if self._write_file(sector,"%s.sector" % sector_filename):
+        if self.save_object(sector):
           self.log.debug("add_sector(): Sector file %s.sector successfully added to cluster dir %s" % (sector.id,sector.cluster.name))
           return sector
         else:
