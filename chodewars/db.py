@@ -200,7 +200,11 @@ class FlatFileDatabase(Database):
         self.log.debug("_read_file(): Returning Player object %s" % str(p))
         return p
       if extension == "cluster":
-        pass
+        name = f.readline().strip()
+        x = f.readline().strip()
+        y = f.readline().strip()
+        f.close()
+        return Cluster(name,x,y)
       if extension == "sector":
         cluster_name = f.readline().strip()
         #This looks strange because the path for the sector has the cluster in it
@@ -237,6 +241,12 @@ class FlatFileDatabase(Database):
         f.write("%s\n" % obj.name)
         f.write("%s\n" % obj.sector.cluster.name if obj.sector else str(None))
         f.write("%s\n" % obj.sector.id if obj.sector else str(None))
+        f.close()
+        return True
+      if object_class == "Cluster":
+        f.write("%s\n" % obj.name)
+        f.write("%s\n" % obj.x)
+        f.write("%s\n" % obj.y)
         f.close()
         return True
       if object_class == "Sector":
@@ -330,7 +340,7 @@ class FlatFileDatabase(Database):
     if self.db_exists():
       loaded_cluster = self.get_cluster(cluster.name)
       if loaded_cluster is None:
-        if self._write_cluster(cluster,"%s.cluster" % cluster.name):
+        if self._write_file(cluster,"%s.cluster" % cluster.name):
           self.log.debug("add_cluster(): Cluster file %s.cluster successfully added" % cluster.name)
           #Make a directory with the cluster's name
           if self._verify_cluster_dir(cluster):
@@ -377,8 +387,8 @@ class FlatFileDatabase(Database):
       self.log.debug("get_cluster(): Retrieving cluster %s" % cluster_name)
       cluster_file_path = os.path.join(self.path,"%s.cluster" % cluster_name)
       if os.path.exists(cluster_file_path):
-        self.log.debug("get_cluster(): Cluster file %s was found, calling _read_cluster()" % cluster_file_path)
-        return self._read_cluster("%s.cluster" % cluster_name)
+        self.log.debug("get_cluster(): Cluster file %s was found, calling _read_file()" % cluster_file_path)
+        return self._read_file("%s.cluster" % cluster_name)
       else:
         self.log.debug("get_cluster(): Cluster file %s was not found, returning None" % cluster_file_path)
         return None
