@@ -99,7 +99,7 @@ class Game(object):
     
     empty_sector = None
     while not empty_sector:
-      random_sector_id = random.randint(0,int(random_cluster.x)*int(random_cluster.y))
+      random_sector_id = random.randint(1,int(random_cluster.x)*int(random_cluster.y))
       random_sector = self.db.get_sector(random_cluster,random_sector_id)
       if not random_sector:
         empty_sector = Sector(random_cluster,random_sector_id)
@@ -121,9 +121,86 @@ class Game(object):
       self.log.error("assign_home_sector(): db.add_sector() returned None, so the sector was not successfully created")
       return False
     
-  def move_player(self,player,sector):
-    player.sector = sector
+  def move_player(self,player,cluster_name,sector_id):
+    available_warps = self.get_available_warps(player)
+    sector = self.db.get_sector(self.db.get_cluster(cluster_name),sector_id)
+    if sector in available_warps:
+      self.log.debug("move_player(): Move commmand is valid, moving player %s to sector %s" % (player,sector))
+      player.sector = sector
+    else:
+      self.log.error("move_player(): Sector %s is not in the list of available warps: %s" % (sector.id,str(available_warps)))
     if self.db.save_object(player):
+      self.log.debug("move_player(): Player object saved")
       return True
     else:
+      self.log.error("move_player(): Player object could not be saved")
       return False
+  
+  def visualize_cluster(self,player):
+    """Get a visual map for the current cluster of the player."""
+    highlight_sector = player.sector
+    cluster = player.sector.cluster
+    
+    lines = []
+    for y in xrange(0,cluster.y):
+      s = ""
+      for x in xrange(1,cluster.x+1):
+        s += "%s " % str(x + (y * cluster.y))
+      lines.append(s)
+    return lines
+  
+  def get_available_warps(self,player):
+    """Return a list of sectors available for the player."""
+    sector = player.sector
+    self.log.debug("Building list of available warps for sector %s" % sector)
+    cluster = player.sector.cluster
+    sectors = []
+    
+    self.log.debug("Calculations: %s mod %s = %s" % (sector.id,cluster.y,sector.id % cluster.y))
+    
+    top_row = True if sector.id <= cluster.x else False
+    left_column = True if sector.id % cluster.y == 1 else False
+    bottom_row = True if sector.id >= (cluster.x * cluster.y - cluster.x) else False
+    right_column = True if sector.id % cluster.y == 0 else False
+    
+    #nw
+    if not top_row and not left_column:
+      self.log.debug("Adding Northwest sector to sectors list")
+      sectors.append(self.db.get_sector(cluster,(sector.id - cluster.x - 1),add = True))
+    
+    #n
+    if not top_row:
+      self.log.debug("Adding North sector to sectors list")
+      sectors.append(self.db.get_sector(cluster,(sector.id - cluster.x),add = True))
+    
+    #ne
+    if not top_row and not right_column:
+      self.log.debug("Adding Northwest sector to sectors list")
+      sectors.append(self.db.get_sector(cluster,(sector.id - cluster.x + 1),add = True))
+    
+    #e
+    if not right_column:
+      self.log.debug("Adding East sector to sectors list")
+      sectors.append(self.db.get_sector(cluster,(sector.id + 1),add = True))
+    
+    #se
+    if not bottom_row and not right_column:
+      self.log.debug("Adding Southeast sector to sectors list")
+      sectors.append(self.db.get_sector(cluster,(sector.id + cluster.x + 1),add = True))
+    
+    #s
+    if not bottom_row:
+      self.log.debug("Adding South sector to sectors list")
+      sectors.append(self.db.get_sector(cluster,(sector.id + cluster.x),add = True))
+    
+    #sw
+    if not bottom_row and not left_column:
+      self.log.debug("Adding Southwest sector to sectors list")
+      sectors.append(self.db.get_sector(cluster,(sector.id + cluster.x - 1),add = True))
+    
+    #w
+    if not left_column:
+      self.log.debug("Adding West sector to sectors list")
+      sectors.append(self.db.get_sector(cluster,(sector.id - 1),add = True))
+    
+    return sorted(sectors, key = lambda sector: sector.id)
