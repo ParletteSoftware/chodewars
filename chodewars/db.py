@@ -174,6 +174,8 @@ class FlatFileDatabase(Database):
       return self._write_file(obj,"%s.cluster" % obj.name)
     if object_class == "Sector":
       return self._write_file(obj,"%s.sector" % os.path.join(obj.cluster.name,str(obj.id)))
+    if object_class == "Planet":
+      return self._write_file(obj,"%s.planet" % obj.name)
     
     return False
   
@@ -407,7 +409,7 @@ class FlatFileDatabase(Database):
     if self.db_exists():
       loaded_planet = self.get_planet(planet.name)
       if loaded_planet is None:
-        if self._write_file(planet,"%s.planet" % planet.name):
+        if self.save_object(planet):
           self.log.debug("add_planet(): Planet file %s.planet successfully added" % planet.name)
           return True
         else:

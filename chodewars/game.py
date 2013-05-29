@@ -115,7 +115,8 @@ class Game(object):
       self.log.debug("assign_home_sector(): Adding planet %s to database" % planet)
       self.db.add_planet(planet)
       self.log.debug("assign_home_sector(): Moving player to sector %s" % home_sector.id)
-      self.move_player(player,home_sector)
+      player.sector = home_sector
+      self.db.save_object(player)
       return True
     else:
       self.log.error("assign_home_sector(): db.add_sector() returned None, so the sector was not successfully created")
@@ -138,19 +139,27 @@ class Game(object):
   
   def visualize_cluster(self,player):
     """Get a visual map for the current cluster of the player."""
-    highlight_sector = player.sector
-    cluster = player.sector.cluster
-    
-    lines = []
-    for y in xrange(0,cluster.y):
-      s = ""
-      for x in xrange(1,cluster.x+1):
-        s += "%s " % str(x + (y * cluster.y))
-      lines.append(s)
-    return lines
+    if player.sector:
+      highlight_sector = player.sector
+      cluster = player.sector.cluster
+      
+      lines = []
+      for y in xrange(0,cluster.y):
+        s = ""
+        for x in xrange(1,cluster.x+1):
+          s += "%s " % str(x + (y * cluster.y))
+        lines.append(s)
+      return lines
+    else:
+      self.log.debug("visualize_cluster(): Player has no sector, returning empty list")
+      return []
   
   def get_available_warps(self,player):
     """Return a list of sectors available for the player."""
+    if not player.sector:
+      self.log.debug("get_available_warps(): Player has no sector defined, returning empty list")
+      return []
+    
     sector = player.sector
     self.log.debug("Building list of available warps for sector %s" % sector)
     cluster = player.sector.cluster
