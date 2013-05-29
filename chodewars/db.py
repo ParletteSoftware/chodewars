@@ -170,6 +170,8 @@ class FlatFileDatabase(Database):
     
     if object_class == "Player":
       return self._write_file(obj,"%s.player" % obj.name)
+    if object_class == "Cluster":
+      return self._write_file(obj,"%s.cluster" % obj.name)
     
     return False
   
@@ -316,7 +318,7 @@ class FlatFileDatabase(Database):
     if self.db_exists():
       loaded_cluster = self.get_cluster(cluster.name)
       if loaded_cluster is None:
-        if self._write_file(cluster,"%s.cluster" % cluster.name):
+        if self.save_object(cluster):
           self.log.debug("add_cluster(): Cluster file %s.cluster successfully added" % cluster.name)
           #Make a directory with the cluster's name
           if self._verify_cluster_dir(cluster):
