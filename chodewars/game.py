@@ -139,7 +139,7 @@ class Game(object):
   
   def visualize_cluster(self,player):
     """Get a visual map for the current cluster of the player."""
-    if player.sector:
+    if player and player.sector:
       highlight_sector = player.sector
       cluster = player.sector.cluster
       
@@ -156,7 +156,7 @@ class Game(object):
   
   def get_available_warps(self,player):
     """Return a list of sectors available for the player."""
-    if not player.sector:
+    if not player or not player.sector:
       self.log.debug("get_available_warps(): Player has no sector defined, returning empty list")
       return []
     
