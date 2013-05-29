@@ -6,6 +6,7 @@ from player import Player
 from cluster import Cluster
 from planet import Planet
 from sector import Sector
+from ship import Ship
 
 class Database(object):
   """This is a base class which defines the methods that need to be implemented for database operations.
@@ -201,18 +202,12 @@ class FlatFileDatabase(Database):
         name = f.readline().strip()
         cluster_name = f.readline().strip()
         sector_id = f.readline().strip()
+        ship_name = f.readline().strip()
         f.close()
         cluster = self.get_cluster(cluster_name)
-        if cluster:
-          self.log.debug("_read_file(): Loaded cluster %s while loading player %s" % (cluster_name,name))
-        else:
-          self.log.debug("_read_file(): Cluster could not be loaded from player file")
         sector = self.get_sector(cluster,sector_id) if cluster else None
-        if sector:
-          self.log.debug("_read_file(): Loaded sector %s-%s while loading player %s" % (cluster_name,sector_id,name))
-        else:
-          self.log.debug("_read_file(): Sector could not be loaded from player file")
-        p = Player(id,name,sector)
+        ship = self.get_ship(ship_name)
+        p = Player(id,name,sector,ship)
         self.log.debug("_read_file(): Returning Player object %s" % str(p))
         return p
       if extension == "cluster":
@@ -261,6 +256,7 @@ class FlatFileDatabase(Database):
         f.write("%s\n" % obj.name)
         f.write("%s\n" % obj.sector.cluster.name if obj.sector else str(None))
         f.write("%s\n" % obj.sector.id if obj.sector else str(None))
+        f.write("%s\n" % obj.ship.name if obj.ship else str(None))
         f.close()
         return True
       if object_class == "Cluster":

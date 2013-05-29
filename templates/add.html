@@ -29,6 +29,13 @@
       <input type="submit" value="Create Home Sector"/>
     </form>
   {% end %}
+  {% if add_type == "ship" %}
+    <form id="add_ship" action="/add/ship" method="post">
+      <label for="ship_name">Ship Name</label>
+      <input type="text" name="ship_name" placeholder="Ship Name"/>
+      <input type="submit" value="Build Ship"/>
+    </form>
+  {% end %}
   </div>
 {% end %}
 
