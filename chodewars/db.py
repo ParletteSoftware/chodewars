@@ -279,18 +279,6 @@ class FlatFileDatabase(Database):
       self.log.error("add_player(): Database does not exist, aborting...")
       return False
   
-  def _write_player(self,player,filename):
-    """Wrtie the player object to file, overwriting whatever is there."""
-    self.log.debug("_write_player(): Opening %s for writing" % os.path.join(self.path,filename))
-    f = open(os.path.join(self.path,filename),'w')
-    with f:
-      f.write("%s\n" % player.id)
-      f.write("%s\n" % player.name)
-      f.close()
-      return True
-    self.log.error("_write_player(): Error opening %s for writing" % os.path.join(self.path,filename))
-    return False
-  
   def get_player(self,player_name):
     """Verify a player file exists and load that Player object."""
     if self.db_exists():
@@ -323,18 +311,6 @@ class FlatFileDatabase(Database):
     self.log.debug("Player id %s was not found in the database, returning None" % player_id)
     return None
     
-  def _read_player(self,filename):
-    """Read a player object from a file. The file should be verified as existing before this is called."""
-    self.log.debug("_read_player(): Opening %s for reading" % os.path.join(self.path,filename))
-    f = open(os.path.join(self.path,filename),'r')
-    with f:
-      id = f.readline().strip()
-      name = f.readline().strip()
-      f.close()
-      return Player(id,name)
-    self.log.error("_read_player(): Error opening %s for reading" % os.path.join(self.path,filename))
-    return None
-  
   def add_cluster(self,cluster):
     """Create a directory for this cluster if it doesn't already exist. Return the created cluster."""
     if self.db_exists():
@@ -366,21 +342,7 @@ class FlatFileDatabase(Database):
     
     self.log.error("There was an error creating the cluster directory %s" % cluster_path)
     return False
-      
-  
-  def _write_cluster(self,cluster,filename):
-    """Write a cluster object to a file, overwriting what is there."""
-    self.log.debug("_write_cluster(): Opening %s for writing" % os.path.join(self.path,filename))
-    f = open(os.path.join(self.path,filename),'w')
-    with f:
-      f.write("%s\n" % cluster.name)
-      f.write("%s\n" % cluster.x)
-      f.write("%s\n" % cluster.y)
-      f.close()
-      return True
-    self.log.error("_write_cluster(): Error opening %s for writing" % os.path.join(self.path,filename))
-    return False
-  
+        
   def get_cluster(self,cluster_name):
     """Return a cluster if it exists, or None if it does not."""
     if self.db_exists():
@@ -395,20 +357,7 @@ class FlatFileDatabase(Database):
     else:
       self.log.error("get_cluster(): Database does not exist, aborting...")
       return None
-  
-  def _read_cluster(self,filename):
-    """Read a cluster file into a new Cluster object."""
-    self.log.debug("_read_cluster(): Opening %s for reading" % os.path.join(self.path,filename))
-    f = open(os.path.join(self.path,filename),'r')
-    with f:
-      name = f.readline().strip()
-      x = f.readline().strip()
-      y = f.readline().strip()
-      f.close()
-      return Cluster(name,x,y)
-    self.log.error("_read_cluster(): Error opening %s for reading" % os.path.join(self.path,filename))
-    return None
-  
+    
   def add_sector(self,sector):
     """Add a sector to the a cluster."""
     if self.db_exists():
