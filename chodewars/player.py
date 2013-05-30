@@ -19,5 +19,5 @@ class Player(object):
     self.ship = ship
     
   def to_dict(self):
-    return {"id":self.id, "name":self.name, "sector":str(self.sector)}
+    return {"id":self.id, "name":self.name, "sector":str(self.sector), "ship":str(self.ship)}
     
