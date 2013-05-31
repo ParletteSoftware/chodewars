@@ -7,6 +7,7 @@ from cluster import Cluster
 from sector import Sector
 from planet import Planet
 from ship import Ship
+from port import Port
 
 class Game(object):
   def __init__(self):
@@ -172,6 +173,8 @@ class Game(object):
     left_column = True if sector.id % cluster.y == 1 else False
     bottom_row = True if sector.id >= (cluster.x * cluster.y - cluster.x) else False
     right_column = True if sector.id % cluster.y == 0 else False
+    
+    #TODO: if the sector doesn't exist, then Game should create it (and add ports to some). Remove add = True
     
     #nw
     if not top_row and not left_column:
