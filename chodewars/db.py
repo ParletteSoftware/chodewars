@@ -6,6 +6,7 @@ from player import Player
 from cluster import Cluster
 from planet import Planet
 from sector import Sector
+from ship import Ship
 
 class Database(object):
   """This is a base class which defines the methods that need to be implemented for database operations.
@@ -101,6 +102,14 @@ class Database(object):
     """Retrieve a planet from the database."""
     return None
   
+  def add_ship(self,ship):
+    """Add a new ship to the database."""
+    return None
+  
+  def get_ship(self,ship_name):
+    """Retrieve a ship from the database with the given name."""
+    return None
+  
 class FlatFileDatabase(Database):
   def db_exists(self):
     if self.path:
@@ -176,6 +185,8 @@ class FlatFileDatabase(Database):
       return self._write_file(obj,"%s.sector" % os.path.join(obj.cluster.name,str(obj.id)))
     if object_class == "Planet":
       return self._write_file(obj,"%s.planet" % obj.name)
+    if object_class == "Ship":
+      return self._write_file(obj,"%s.ship" % obj.name)
     
     return False
   
@@ -191,18 +202,12 @@ class FlatFileDatabase(Database):
         name = f.readline().strip()
         cluster_name = f.readline().strip()
         sector_id = f.readline().strip()
+        ship_name = f.readline().strip()
         f.close()
         cluster = self.get_cluster(cluster_name)
-        if cluster:
-          self.log.debug("_read_file(): Loaded cluster %s while loading player %s" % (cluster_name,name))
-        else:
-          self.log.debug("_read_file(): Cluster could not be loaded from player file")
         sector = self.get_sector(cluster,sector_id) if cluster else None
-        if sector:
-          self.log.debug("_read_file(): Loaded sector %s-%s while loading player %s" % (cluster_name,sector_id,name))
-        else:
-          self.log.debug("_read_file(): Sector could not be loaded from player file")
-        p = Player(id,name,sector)
+        ship = self.get_ship(ship_name)
+        p = Player(id,name,sector,ship)
         self.log.debug("_read_file(): Returning Player object %s" % str(p))
         return p
       if extension == "cluster":
@@ -226,6 +231,10 @@ class FlatFileDatabase(Database):
         cluster = self.get_cluster(cluster_name)
         sector = self.get_sector(cluster,sector_id)
         return Planet(sector,name) if sector else None
+      if extension == "ship":
+        name = f.readline().strip()
+        holds = f.readline().strip()
+        return Ship(name,holds) if name and holds else None
     self.log.error("_read_file(): Error opening %s for reading" % os.path.join(self.path,filename))
     return None
   
@@ -247,6 +256,7 @@ class FlatFileDatabase(Database):
         f.write("%s\n" % obj.name)
         f.write("%s\n" % obj.sector.cluster.name if obj.sector else str(None))
         f.write("%s\n" % obj.sector.id if obj.sector else str(None))
+        f.write("%s\n" % obj.ship.name if obj.ship else str(None))
         f.close()
         return True
       if object_class == "Cluster":
@@ -264,6 +274,11 @@ class FlatFileDatabase(Database):
         f.write("%s\n" % obj.sector.cluster.name)
         f.write("%s\n" % obj.sector.id)
         f.write("%s\n" % obj.name)
+        return True
+      if object_class == "Ship":
+        f.write("%s\n" % obj.name)
+        f.write("%s\n" % obj.holds)
+        f.close()
         return True
     self.log.error("_write_file(): Error opening %s for writing" % os.path.join(self.path,filename))
     return False
@@ -436,3 +451,37 @@ class FlatFileDatabase(Database):
     else:
       self.log.error("get_planet(): Database does not exist, aborting...")
       return None
+
+  def add_ship(self,ship):
+    """Add a new ship to the database."""
+    if self.db_exists():
+      loaded_ship = self.get_ship(ship.name)
+      if loaded_ship is None:
+        if self.save_object(ship):
+          self.log.debug("add_ship(): Ship file %s.ship successfully added" % ship.name)
+          return True
+        else:
+          self.log.error("add_ship(): Error writing ship to file")
+          return False
+      else:
+        self.log.debug("add_ship(): Ship already exists, returning False")
+        return False
+    else:
+      self.log.debug("add_ship(): Database does not exist, aborting...")
+      return False
+  
+  def get_ship(self,ship_name):
+    """Retrieve a ship from the database with the given name."""
+    if self.db_exists():
+      self.log.debug("get_ship(): Retriving ship %s" % ship_name)
+      ship_file_path = os.path.join(self.path,"%s.ship" % ship_name)
+      if os.path.exists(ship_file_path):
+        self.log.debug("get_ship(): Ship file %s was found, calling _read_file()" % ship_file_path)
+        return self._read_file("%s.ship" % ship_name)
+      else:
+        self.log.debug("get_ship(): Ship file %s was not found, returning None" % ship_file_path)
+        return None
+    else:
+      self.log.error("get_ship(): Database does not exist, aborting...")
+      return None
+  

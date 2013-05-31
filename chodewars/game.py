@@ -6,6 +6,7 @@ from player import Player
 from cluster import Cluster
 from sector import Sector
 from planet import Planet
+from ship import Ship
 
 class Game(object):
   def __init__(self):
@@ -213,3 +214,22 @@ class Game(object):
       sectors.append(self.db.get_sector(cluster,(sector.id - 1),add = True))
     
     return sorted(sectors, key = lambda sector: sector.id)
+
+  def build_ship(self,player,ship_name):
+    if player:
+      ship = Ship(ship_name)
+      if self.db.add_ship(ship):
+        player.ship = ship
+        if self.db.save_object(player):
+          self.log.debug("build_ship(): Ship created and player was updated with this ship")
+          return True
+        else:
+          self.log.error("build_ship(): Ship created but player was unable to be saved, so this player likely is not assigned to a ship")
+          return False
+      else:
+        self.log.error("build_ship(): db.add_ship returned False, player was not modified")
+    else:
+      self.log.error("build_ship(): Programming error, player cannot be None")
+    
+    return False
+    
