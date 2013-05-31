@@ -7,6 +7,7 @@ from cluster import Cluster
 from planet import Planet
 from sector import Sector
 from ship import Ship
+from port import Port
 
 class Database(object):
   """This is a base class which defines the methods that need to be implemented for database operations.
@@ -110,6 +111,14 @@ class Database(object):
     """Retrieve a ship from the database with the given name."""
     return None
   
+  def add_port(self,port):
+    """Add a new port to the database."""
+    return None
+  
+  def get_port(self,port_name):
+    """Retrieve a port from the database with the given name."""
+    return None
+  
 class FlatFileDatabase(Database):
   def db_exists(self):
     if self.path:
@@ -187,6 +196,8 @@ class FlatFileDatabase(Database):
       return self._write_file(obj,"%s.planet" % obj.name)
     if object_class == "Ship":
       return self._write_file(obj,"%s.ship" % obj.name)
+    if object_class == "Port":
+      return self._write_file(obj,"%s.port" % obj.name)
     
     return False
   
@@ -235,6 +246,11 @@ class FlatFileDatabase(Database):
         name = f.readline().strip()
         holds = f.readline().strip()
         return Ship(name,holds) if name and holds else None
+      if extension == "port":
+        name = f.readline().strip()
+        sector_parts = f.readline().strip().split('-')
+        sector = Sector(sector_parts[0],sector_parts[1]) if len(sector_parts) == 2 else None
+        return Port(name,sector) if name and sector else None
     self.log.error("_read_file(): Error opening %s for reading" % os.path.join(self.path,filename))
     return None
   
@@ -278,6 +294,11 @@ class FlatFileDatabase(Database):
       if object_class == "Ship":
         f.write("%s\n" % obj.name)
         f.write("%s\n" % obj.holds)
+        f.close()
+        return True
+      if object_class == "Port":
+        f.write("%s\n" % obj.name)
+        f.write("%s\n" % obj.sector)
         f.close()
         return True
     self.log.error("_write_file(): Error opening %s for writing" % os.path.join(self.path,filename))
@@ -485,3 +506,35 @@ class FlatFileDatabase(Database):
       self.log.error("get_ship(): Database does not exist, aborting...")
       return None
   
+  def add_port(self,port):
+    """Add a new port to the database."""
+    if self.db_exists():
+      loaded_port = self.get_port(port.name)
+      if loaded_port is None:
+        if self.save_object(port):
+          self.log.debug("add_port(): Port file %s.port successfully added" % port.name)
+          return True
+        else:
+          self.log.error("add_port(): Error writing port to file")
+          return False
+      else:
+        self.log.debug("add_port(): Port already exists, returning False")
+        return False
+    else:
+      self.log.debug("add_port(): Database does not exist, aborting...")
+      return False
+  
+  def get_port(self,port_name):
+    """Retrieve a port from the database with the given name."""
+    if self.db_exists():
+      self.log.debug("get_port(): Retriving port %s" % port_name)
+      port_file_path = os.path.join(self.path,"%s.ship" % port_name)
+      if os.path.exists(port_file_path):
+        self.log.debug("get_port(): Port file %s was found, calling _read_file()" % port_file_path)
+        return self._read_file("%s.port" % port_name)
+      else:
+        self.log.debug("get_port(): Port file %s was not found, returning None" % port_file_path)
+        return None
+    else:
+      self.log.error("get_port(): Database does not exist, aborting...")
+      return None
