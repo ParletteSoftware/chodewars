@@ -175,8 +175,6 @@ class Game(object):
     bottom_row = True if sector.id >= (cluster.x * cluster.y - cluster.x) else False
     right_column = True if sector.id % cluster.y == 0 else False
     
-    #TODO: if the sector doesn't exist, then Game should create it (and add ports to some). Remove add = True
-    
     #nw
     if not top_row and not left_column:
       self.log.debug("Adding Northwest sector to sectors list")
