@@ -23,4 +23,11 @@ class Entity(object):
   def __repr__(self):
     return str(self.name)
   
-  
+  def __cmp__(self,other):
+    """Default comparison is on the name."""
+    if self.name == other.name:
+      return 0
+    if self.name < other.name:
+      return -1
+    else:
+      return 1
