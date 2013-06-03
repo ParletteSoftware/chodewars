@@ -90,7 +90,7 @@ class Database(object):
     """Add a sector to the given cluster. The cluster is pulled from the Sector object."""
     return None
   
-  def get_sector(self,cluster,sector_id):
+  def get_sector(self,cluster,sector_name):
     """Retrieve a list of all items in a sector."""
     return None
   
@@ -182,7 +182,7 @@ class FlatFileDatabase(Database):
     if object_class == "Cluster":
       return self._write_file(obj,"%s.cluster" % obj.name)
     if object_class == "Sector":
-      return self._write_file(obj,"%s.sector" % os.path.join(obj.cluster.name,str(obj.id)))
+      return self._write_file(obj,"%s.sector" % os.path.join(obj.parent.name,str(obj.name)))
     if object_class == "Planet":
       return self._write_file(obj,"%s.planet" % obj.name)
     if object_class == "Ship":
@@ -201,11 +201,11 @@ class FlatFileDatabase(Database):
         id = f.readline().strip()
         name = f.readline().strip()
         cluster_name = f.readline().strip()
-        sector_id = f.readline().strip()
+        sector_name = f.readline().strip()
         ship_name = f.readline().strip()
         f.close()
         cluster = self.get_cluster(cluster_name)
-        sector = self.get_sector(cluster,sector_id) if cluster else None
+        sector = self.get_sector(cluster,sector_name) if cluster else None
         ship = self.get_ship(ship_name)
         p = Player(id,name,sector,ship)
         self.log.debug("_read_file(): Returning Player object %s" % str(p))
@@ -219,17 +219,18 @@ class FlatFileDatabase(Database):
       if extension == "sector":
         cluster_name = f.readline().strip()
         #This looks strange because the path for the sector has the cluster in it
-        id = filename.split('/')[-1].split('.')[0]
+        name = filename.split('/')[-1].split('.')[0]
         f.close()
         cluster = self.get_cluster(cluster_name)
-        return Sector(cluster,id) if cluster else None
+        self.log.debug("_read_file(): While loading sector, cluster loaded as %s" % cluster)
+        return Sector(cluster,name) if cluster else None
       if extension == "planet":
         cluster_name = f.readline().strip()
-        sector_id = f.readline().strip()
+        sector_name = f.readline().strip()
         name = f.readline().strip()
         f.close()
         cluster = self.get_cluster(cluster_name)
-        sector = self.get_sector(cluster,sector_id)
+        sector = self.get_sector(cluster,sector_name)
         return Planet(sector,name) if sector else None
       if extension == "ship":
         name = f.readline().strip()
@@ -254,8 +255,8 @@ class FlatFileDatabase(Database):
       if object_class == "Player":
         f.write("%s\n" % obj.id)
         f.write("%s\n" % obj.name)
-        f.write("%s\n" % obj.sector.cluster.name if obj.sector else str(None))
-        f.write("%s\n" % obj.sector.id if obj.sector else str(None))
+        f.write("%s\n" % obj.sector.parent.name if obj.sector else str(None))
+        f.write("%s\n" % obj.sector.name if obj.sector else str(None))
         f.write("%s\n" % obj.ship.name if obj.ship else str(None))
         f.close()
         return True
@@ -266,13 +267,13 @@ class FlatFileDatabase(Database):
         f.close()
         return True
       if object_class == "Sector":
-        f.write("%s\n" % obj.cluster.name)
-        f.write("%s\n" % obj.id)
+        f.write("%s\n" % obj.parent.name)
+        f.write("%s\n" % obj.name)
         f.close()
         return True
       if object_class == "Planet":
-        f.write("%s\n" % obj.sector.cluster.name)
-        f.write("%s\n" % obj.sector.id)
+        f.write("%s\n" % obj.sector.parent.name)
+        f.write("%s\n" % obj.sector.name)
         f.write("%s\n" % obj.name)
         return True
       if object_class == "Ship":
@@ -382,36 +383,36 @@ class FlatFileDatabase(Database):
   def add_sector(self,sector):
     """Add a sector to the a cluster."""
     if self.db_exists():
-      loaded_sector = self.get_sector(sector.cluster,sector.id)
+      loaded_sector = self.get_sector(sector.cluster,sector.name)
       if loaded_sector is None:
         if self.save_object(sector):
-          self.log.debug("add_sector(): Sector file %s.sector successfully added to cluster dir %s" % (sector.id,sector.cluster.name))
+          self.log.debug("add_sector(): Sector file %s.sector successfully added to cluster dir %s" % (sector.name,sector.cluster.name))
           return sector
         else:
           self.log.error("add_sector(): Error writing to sector file")
           return None
       else:
-        self.log.debug("add_sector(): Sector already exists, returning sector %s/%s as loaded from file" % (loaded_sector.cluster.name,loaded_sector.id))
+        self.log.debug("add_sector(): Sector already exists, returning sector %s/%s as loaded from file" % (loaded_sector.cluster.name,loaded_sector.name))
         return loaded_sector
     else:
       self.log.error("add_sector(): Database does not exist, aborting...")
       return None
   
-  def get_sector(self,cluster,sector_id,add = False):
+  def get_sector(self,cluster,sector_name,add = False):
     """Retrieve a list of all items in a sector.
     
     If add is True, then the sector will be added to the database."""
     if not cluster: return None
     if self.db_exists():
-      self.log.debug("get_sector(): Retrieving sector %s in cluster %s" % (str(cluster),sector_id))
-      sector_file_path = os.path.join(self.path,cluster.name,"%s.sector" % sector_id)
+      self.log.debug("get_sector(): Retrieving sector %s in cluster %s" % (str(cluster),sector_name))
+      sector_file_path = os.path.join(self.path,cluster.name,"%s.sector" % sector_name)
       if os.path.exists(sector_file_path):
         self.log.debug("get_sector(): Sector file %s was found, calling _read_file()" % sector_file_path)
-        return self._read_file("%s.sector" % os.path.join(cluster.name,str(sector_id)))
+        return self._read_file("%s.sector" % os.path.join(cluster.name,str(sector_name)))
       else:
         if add:
           self.log.debug("get_sector(): Sector file %s was not found, adding sector via add_sector()" % sector_file_path)
-          return self.add_sector(Sector(cluster,sector_id))
+          return self.add_sector(Sector(cluster,sector_name))
         else:
           self.log.debug("get_sector(): Sector file %s was not found, returning None" % sector_file_path)
           return None

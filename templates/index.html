@@ -21,7 +21,7 @@
         <p>You are currently in sector {{str(player.sector)}}</p>
         <p>Available Warps: 
         {% for sector in warps %}
-          <a href="/c/move/{{ sector.id }}">{{ sector.id }}</a>
+          <a href="/c/move/{{ sector.name }}">{{ sector.name }}</a>
         {% end %}
         </p>
       {% else %}

@@ -6,4 +6,4 @@ class Planet(object):
     self.name = name
     
   def __repr__(self):
-    return "%s (%s-%s)" % (self.name,self.sector.cluster.name,self.sector.id)
+    return "%s (%s)" % (self.name,self.sector)
