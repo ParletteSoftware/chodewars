@@ -179,44 +179,68 @@ class Game(object):
     #nw
     if not top_row and not left_column:
       self.log.debug("Adding Northwest sector to sectors list")
-      sectors.append(self.db.get_sector(cluster,(sector.id - cluster.x - 1),add = True))
+      sector_id = sector.id - cluster.x - 1
+      sectors.append(self._explore_sector(cluster,sector_id))
     
     #n
     if not top_row:
       self.log.debug("Adding North sector to sectors list")
-      sectors.append(self.db.get_sector(cluster,(sector.id - cluster.x),add = True))
+      sector_id = sector.id - cluster.x
+      sectors.append(self._explore_sector(cluster,sector_id))
     
     #ne
     if not top_row and not right_column:
       self.log.debug("Adding Northwest sector to sectors list")
-      sectors.append(self.db.get_sector(cluster,(sector.id - cluster.x + 1),add = True))
+      sector_id = sector.id - cluster.x + 1
+      sectors.append(self._explore_sector(cluster,sector_id))
     
     #e
     if not right_column:
       self.log.debug("Adding East sector to sectors list")
-      sectors.append(self.db.get_sector(cluster,(sector.id + 1),add = True))
+      sector_id = sector.id + 1
+      sectors.append(self._explore_sector(cluster,sector_id))
     
     #se
     if not bottom_row and not right_column:
       self.log.debug("Adding Southeast sector to sectors list")
-      sectors.append(self.db.get_sector(cluster,(sector.id + cluster.x + 1),add = True))
+      sector_id = sector.id + cluster.x + 1
+      sectors.append(self._explore_sector(cluster,sector_id))
     
     #s
     if not bottom_row:
       self.log.debug("Adding South sector to sectors list")
-      sectors.append(self.db.get_sector(cluster,(sector.id + cluster.x),add = True))
+      sector_id = sector.id + cluster.x
+      sectors.append(self._explore_sector(cluster,sector_id))
     
     #sw
     if not bottom_row and not left_column:
       self.log.debug("Adding Southwest sector to sectors list")
-      sectors.append(self.db.get_sector(cluster,(sector.id + cluster.x - 1),add = True))
+      sector_id = sector.id + cluster.x - 1
+      sectors.append(self._explore_sector(cluster,sector_id))
     
     #w
     if not left_column:
       self.log.debug("Adding West sector to sectors list")
-      sectors.append(self.db.get_sector(cluster,(sector.id - 1),add = True))
+      sector_id = sector.id - 1
+      sectors.append(self._explore_sector(cluster,sector_id))
     
     return sorted(sectors, key = lambda sector: sector.id)
+  
+  def _explore_sector(self,cluster,sector_id):
+    """For use with the get_available_warps() function, this will load a sector if it already exists.
+    
+    If it does not exist, then it will create that sector, along with any contents (such as port or planets)."""
+    
+    sector = self.db.get_sector(cluster,sector_id)
+    if sector:
+      return sector
+    else:
+      sector = self.db.add_sector(Sector(cluster,sector_id))
+      
+      #Should we add a port?
+      
+      
+      return sector
 
   def build_ship(self,player,ship_name):
     if player:
