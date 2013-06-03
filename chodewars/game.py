@@ -53,6 +53,7 @@ class Game(object):
     #Universe Config
     self.cluster_size = 10
     self.cluster_list = ['alpha']
+    self.port_density = 0.7
     
     return True
   
@@ -238,9 +239,22 @@ class Game(object):
       sector = self.db.add_sector(Sector(cluster,sector_id))
       
       #Should we add a port?
-      
+      if random.random() < self.port_density:
+        self.log.debug("_explore_sector(): Adding port to sector %s" % sector)
+        self.db.add_port(Port(self._get_unique_port_name("Port"),sector))
+        
+        #Reload the sector and return it
+        return self.db.get_sector(cluster,sector_id)
       
       return sector
+  
+  def _get_unique_port_name(self,port_name):
+    number = random.randint(1,1000)
+    while self.db.get_port("%s %s" % (port_name,str(number))):
+      #If this port exists, then increment the port number
+      number += 1
+    self.log.debug("_get_unique_port_name(): Returning port name %s %s" % (port_name,str(number)))
+    return "%s %s" % (port_name,str(number))
 
   def build_ship(self,player,ship_name):
     if player:
