@@ -234,7 +234,7 @@ class FlatFileDatabase(Database):
         name = f.readline().strip()
         f.close()
         cluster = self.get_cluster(cluster_name)
-        sector = self.get_sector(cluster,sector_name)
+        sector = self.get_sector(cluster,sector_name) if cluster else None
         return Planet(sector,name) if sector else None
       if extension == "ship":
         name = f.readline().strip()
@@ -276,8 +276,8 @@ class FlatFileDatabase(Database):
         f.close()
         return True
       if object_class == "Planet":
-        f.write("%s\n" % obj.sector.parent.name)
-        f.write("%s\n" % obj.sector.name)
+        f.write("%s\n" % obj.parent.parent.name)
+        f.write("%s\n" % obj.parent.name)
         f.write("%s\n" % obj.name)
         return True
       if object_class == "Ship":
