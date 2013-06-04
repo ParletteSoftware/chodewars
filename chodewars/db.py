@@ -1,6 +1,7 @@
 import os
 import logging
 import random
+import shutil
 
 from player import Player
 from cluster import Cluster
@@ -142,7 +143,10 @@ class FlatFileDatabase(Database):
       if os.path.exists(self.path):
         self.log.debug("Removing directory (%s) contents" % self.path)
         for f in os.listdir(self.path):
-          os.remove(f)
+          if os.path.isdir(os.path.join(self.path,f)):
+            shutil.rmtree(os.path.join(self.path,f))
+          else:
+            os.remove(os.path.join(self.path,f))
       else:
         self.log.debug("Path %s does not exist, creating it..." % self.path)
         os.makedirs(self.path)
