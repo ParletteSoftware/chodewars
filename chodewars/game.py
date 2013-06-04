@@ -218,7 +218,7 @@ class Game(object):
 
   def build_ship(self,player,ship_name):
     if player:
-      ship = Ship(ship_name)
+      ship = Ship(ship_name,player.sector)
       if self.db.add_ship(ship):
         player.ship = ship
         if self.db.save_object(player):

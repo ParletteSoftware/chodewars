@@ -238,8 +238,13 @@ class FlatFileDatabase(Database):
         return Planet(sector,name) if sector else None
       if extension == "ship":
         name = f.readline().strip()
+        cluster_name = f.readline().strip()
+        sector_name = f.readline().strip()
         holds = f.readline().strip()
-        return Ship(name,holds) if name and holds else None
+        f.close()
+        cluster = self.get_cluster(cluster_name)
+        sector = self.get_sector(cluster,sector_name) if cluster else None
+        return Ship(name,sector,holds) if name and sector else None
     self.log.error("_read_file(): Error opening %s for reading" % os.path.join(self.path,filename))
     return None
   
@@ -282,6 +287,8 @@ class FlatFileDatabase(Database):
         return True
       if object_class == "Ship":
         f.write("%s\n" % obj.name)
+        f.write("%s\n" % obj.parent.parent.name) #Cluster
+        f.write("%s\n" % obj.parent.name) #Sector
         f.write("%s\n" % obj.holds)
         f.close()
         return True
