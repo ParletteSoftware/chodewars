@@ -212,7 +212,6 @@ class FlatFileDatabase(Database):
         sector = self.get_sector(cluster,sector_name) if cluster else None
         ship = self.get_ship(ship_name)
         p = Player(id,name,sector,ship)
-        self.log.debug("_read_file(): Returning Player object %s" % str(p))
         return p
       if extension == "cluster":
         name = f.readline().strip()
@@ -226,7 +225,7 @@ class FlatFileDatabase(Database):
         name = filename.split('/')[-1].split('.')[0]
         f.close()
         cluster = self.get_cluster(cluster_name)
-        self.log.debug("_read_file(): While loading sector, cluster loaded as %s" % cluster)
+        #self.log.debug("_read_file(): While loading sector, cluster loaded as %s" % cluster)
         return Sector(cluster,name) if cluster else None
       if extension == "planet":
         cluster_name = f.readline().strip()
@@ -262,6 +261,7 @@ class FlatFileDatabase(Database):
     with f:
       self.log.debug("_write_file(): obj parameter type is %s" % object_class)
       if object_class == "Player":
+        self.log.debug("_write_file(): Writing player object %s" % str(obj.to_dict()))
         f.write("%s\n" % obj.id)
         f.write("%s\n" % obj.name)
         f.write("%s\n" % obj.sector.parent.name if obj.sector else str(None))
@@ -334,12 +334,12 @@ class FlatFileDatabase(Database):
       if f.endswith(".player"):
         p = self.get_player(f.split('.')[0])
         if p:
-          self.log.debug("get_player_by_id(): Player returned from get_player('%s.player') was %s" % (f,str(p.to_dict())))
+          self.log.debug("get_player_by_id(): Player returned from get_player('%s') was %s" % (f,str(p.to_dict())))
           if p.id == player_id:
             self.log.debug("get_player_by_id(): Found id %s in %s, returning %s" % (player_id,f,p.name))
             return p
         else:
-          self.log.debug("get_player_by_id(): Player returned from get_player('%s.player') was None" % f)
+          self.log.debug("get_player_by_id(): Player returned from get_player('%s') was None" % f)
     
     self.log.debug("Player id %s was not found in the database, returning None" % player_id)
     return None
@@ -415,7 +415,7 @@ class FlatFileDatabase(Database):
     If add is True, then the sector will be added to the database."""
     if not cluster: return None
     if self.db_exists():
-      self.log.debug("get_sector(): Retrieving sector %s in cluster %s" % (str(cluster),sector_name))
+      self.log.debug("get_sector(): Retrieving sector %s in cluster %s" % (sector_name,str(cluster)))
       sector_file_path = os.path.join(self.path,cluster.name,"%s.sector" % sector_name)
       if os.path.exists(sector_file_path):
         self.log.debug("get_sector(): Sector file %s was found, calling _read_file()" % sector_file_path)

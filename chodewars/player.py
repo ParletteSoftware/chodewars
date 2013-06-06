@@ -1,22 +1,21 @@
 from ship import Ship
+from sector import Sector
+from entity import Entity
 
-class Player(object):
+class Player(Entity):
   """Definition for a player in the game.
   
   This is linked to a user account, which is currently a Google account."""
   
   def __init__(self,player_id,name,sector = None,ship = None):
     #player_id is the email address (unique)
-    self.id = player_id
+    super(Player,self).__init__(name,id = player_id,parent = ship)
     
-    #The player's name (to be displayed in game)
-    self.name = name
+    #Deprecated - Player's ship
+    self.ship = self.parent
     
-    #Player's location
-    self.sector = sector
-    
-    #Player's ship
-    self.ship = ship
+    #Deprecated - Player's location (determined from the player's ship)
+    self.sector = self.ship.parent
     
   def to_dict(self):
     return {"id":self.id, "name":self.name, "sector":str(self.sector), "ship":str(self.ship)}

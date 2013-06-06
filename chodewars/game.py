@@ -12,7 +12,7 @@ class Game(object):
   def __init__(self):
     #Setup logging for this module
     self.log = logging.getLogger('chodewars.game')
-    self.log.setLevel(logging.DEBUG)
+    self.log.setLevel(logging.INFO)
     
     #Log Format
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -78,6 +78,16 @@ class Game(object):
       self.log.debug("Retrieving player account for id %s" % player_id)
       return self.db.get_player_by_id(player_id)
   
+  def load_object(self,object_type,name,parent_name = None):
+    """Load an object from the database.
+    
+    Some objects (like sectors) require the parent to load."""
+    if object_type == "sector":
+      if name and parent_name:
+        return self.db.get_sector(self.db.get_cluster(parent_name),name)
+    
+    return None
+  
   def _load_clusters(self):
     """Load the clusters instance variable from the database using the list in the config."""
     for c in self.cluster_list:
@@ -116,27 +126,41 @@ class Game(object):
       self.log.debug("assign_home_sector(): Adding planet %s to database" % planet)
       self.db.add_planet(planet)
       self.log.debug("assign_home_sector(): Moving player to sector %s" % home_sector.name)
-      player.sector = home_sector
+      player.parent.parent = home_sector
+      #TODO: Test this process
       self.db.save_object(player)
+      self.db.save_object(player.parent)
       return True
     else:
       self.log.error("assign_home_sector(): db.add_sector() returned None, so the sector was not successfully created")
       return False
     
   def move_player(self,player,cluster_name,sector_name):
-    available_warps = self.get_available_warps(player)
-    sector = self.db.get_sector(self.db.get_cluster(cluster_name),sector_name)
-    if sector in available_warps:
-      self.log.debug("move_player(): Move commmand is valid, moving player %s to sector %s" % (player,sector))
-      player.sector = sector
-    else:
-      self.log.error("move_player(): Sector %s is not in the list of available warps: %s" % (sector.name,str(available_warps)))
-    if self.db.save_object(player):
-      self.log.debug("move_player(): Player object saved")
+    """Deprecated, use move_ship() instead.
+    
+    Moving the player is accomplished by moving their ship (the player's parent)."""
+    
+    #We now use move_ship instead
+    return move_ship(player.parent,self.load_object("sector",name = sector_name, parent = cluster_name))
+  
+  def move_ship(self,ship,container):
+    """Move the ship to another container (such as a sector or planet).
+    
+    Currently this only supports moving to sectors."""
+    
+    valid_container = False
+    
+    if container.__class__.__name__ == "Sector":
+      if container in self.get_available_warps(ship = ship):
+        valid_container = True
+    
+    if valid_container:
+      self.log.info("Moving %s to %s" % (ship,container))
+      ship.parent = container
+      self.db.save_object(ship)
       return True
-    else:
-      self.log.error("move_player(): Player object could not be saved")
-      return False
+      
+    return False
   
   def visualize_cluster(self,player):
     """Get a visual map for the current cluster of the player."""
@@ -155,16 +179,23 @@ class Game(object):
       self.log.debug("visualize_cluster(): Player has no sector, returning empty list")
       return []
   
-  def get_available_warps(self,player):
+  def get_available_warps(self,player = None,ship = None):
     """Return a list of sectors available for the player."""
-    if not player or not player.sector:
+    if not player and not ship:
+      self.log.debug("get_available_warps(): Player and Ship are both None, returning empty list")
+      return []
+    if player and not player.sector:
       self.log.debug("get_available_warps(): Player has no sector defined, returning empty list")
       return []
     
-    sector = player.sector
+    if player:
+      self.log.info("get_available_warps(): Passing Player parameter is deprecated, pass ship instead.")
+      sector = player.parent.parent #Use the player's ship for location
+    if ship:
+      sector = ship.parent
     sector_number = int(sector.name)
     self.log.debug("Building list of available warps for sector %s" % sector)
-    cluster = player.sector.parent
+    cluster = sector.parent
     sectors = []
     
     self.log.debug("Calculations: %s mod %s = %s" % (sector_number,cluster.y,sector_number % cluster.y))

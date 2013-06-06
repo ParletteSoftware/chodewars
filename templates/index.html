@@ -21,7 +21,8 @@
         <p>You are currently in sector {{str(player.sector)}}</p>
         <p>Available Warps: 
         {% for sector in warps %}
-          <a href="/c/move/{{ sector.name }}">{{ sector.name }}</a>
+          <!-- TODO: /c/move/sector needs to be escaped, dashes won't work -->
+          <a href="/c/move/?cluster={{sector.parent.name}}&sector={{sector.name}}">{{ str(sector) }}</a>
         {% end %}
         </p>
       {% else %}

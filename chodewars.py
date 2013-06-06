@@ -1,6 +1,7 @@
 import tornado.ioloop
 import tornado.web
 import tornado.auth
+import tornado.escape
 import os.path
 import logging
 import datetime
@@ -25,7 +26,7 @@ class Application(tornado.web.Application):
       (r"/login", LoginHandler),
       (r"/logout", LogoutHandler),
       (r"/add/([\w]*)", AddHandler),
-      (r"/c/([\w]*)/([\w]*)", CommandHandler),
+      (r"/c/([\w]*)/", CommandHandler),
     ]
     
     settings = dict(
@@ -76,7 +77,7 @@ class MainHandler(BaseHandler):
       footer_text = "Chodewars",
       user = self.current_user,
       player = player,
-      warps = game.get_available_warps(player)
+      warps = game.get_available_warps(ship = player.parent)
     )
 
 class LoginHandler(BaseHandler, tornado.auth.GoogleMixin):
@@ -147,12 +148,22 @@ class AddHandler(BaseHandler):
     self.redirect("/")
 
 class CommandHandler(BaseHandler):
-  def get(self,command,argument):
+  def get(self,command):
+    print "cmd: %s" % str(command)
     player = self.get_current_player()
     if game:
       if command == "move":
-        if argument:
-          game.move_player(player,player.sector.cluster.name,argument)
+        print "\n\n---------------------"
+        cluster_name = self.get_argument("cluster",default = None, strip = True)
+        print cluster_name
+        sector_name = self.get_argument("sector",default = None, strip = True)
+        print sector_name
+        if cluster_name and sector_name:
+          sector = game.load_object("sector",sector_name,cluster_name)
+          print "sector loaded as %s" % sector
+          if sector:
+            print "Moving player"
+            game.move_ship(player.parent,sector)
     else:
       self.write("Game not initialized")
     
