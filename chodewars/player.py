@@ -15,7 +15,7 @@ class Player(Entity):
     self.ship = self.parent
     
     #Deprecated - Player's location (determined from the player's ship)
-    self.sector = self.ship.parent
+    self.sector = self.ship.parent if self.ship else None
     
   def to_dict(self):
     return {"id":self.id, "name":self.name, "sector":str(self.sector), "ship":str(self.ship)}

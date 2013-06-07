@@ -204,14 +204,14 @@ class FlatFileDatabase(Database):
       if extension == "player":
         id = f.readline().strip()
         name = f.readline().strip()
-        cluster_name = f.readline().strip()
-        sector_name = f.readline().strip()
+        #cluster_name = f.readline().strip()
+        #sector_name = f.readline().strip()
         ship_name = f.readline().strip()
         f.close()
-        cluster = self.get_cluster(cluster_name)
-        sector = self.get_sector(cluster,sector_name) if cluster else None
+        #cluster = self.get_cluster(cluster_name)
+        #sector = self.get_sector(cluster,sector_name) if cluster else None
         ship = self.get_ship(ship_name)
-        p = Player(id,name,sector,ship)
+        p = Player(id,name,ship = ship)
         return p
       if extension == "cluster":
         name = f.readline().strip()
@@ -243,7 +243,7 @@ class FlatFileDatabase(Database):
         f.close()
         cluster = self.get_cluster(cluster_name)
         sector = self.get_sector(cluster,sector_name) if cluster else None
-        return Ship(name,sector,holds) if name and sector else None
+        return Ship(name,sector,holds) if name else None
     self.log.error("_read_file(): Error opening %s for reading" % os.path.join(self.path,filename))
     return None
   
@@ -264,34 +264,30 @@ class FlatFileDatabase(Database):
         self.log.debug("_write_file(): Writing player object %s" % str(obj.to_dict()))
         f.write("%s\n" % obj.id)
         f.write("%s\n" % obj.name)
-        f.write("%s\n" % obj.sector.parent.name if obj.sector else str(None))
-        f.write("%s\n" % obj.sector.name if obj.sector else str(None))
-        f.write("%s\n" % obj.ship.name if obj.ship else str(None))
-        f.close()
-        return True
+        #f.write("%s\n" % obj.sector.parent.name if obj.sector else "None"
+        #f.write("%s\n" % obj.sector.name if obj.sector else str(None))
+        f.write("%s\n" % obj.ship.name if obj.ship else "None\n")
       if object_class == "Cluster":
         f.write("%s\n" % obj.name)
         f.write("%s\n" % obj.x)
         f.write("%s\n" % obj.y)
-        f.close()
-        return True
       if object_class == "Sector":
         f.write("%s\n" % obj.parent.name)
         f.write("%s\n" % obj.name)
-        f.close()
-        return True
       if object_class == "Planet":
         f.write("%s\n" % obj.parent.parent.name)
         f.write("%s\n" % obj.parent.name)
         f.write("%s\n" % obj.name)
-        return True
       if object_class == "Ship":
         f.write("%s\n" % obj.name)
-        f.write("%s\n" % obj.parent.parent.name) #Cluster
-        f.write("%s\n" % obj.parent.name) #Sector
+        #Cluster
+        f.write("%s\n" % obj.parent.parent.name if obj.parent and obj.parent.parent else "None\n")
+        #Sector
+        f.write("%s\n" % obj.parent.name if obj.parent else "None\n")
         f.write("%s\n" % obj.holds)
-        f.close()
-        return True
+      f.close()
+      self.log.info("Wrote %s %s to %s" % (object_class,obj,f))
+      return True
     self.log.error("_write_file(): Error opening %s for writing" % os.path.join(self.path,filename))
     return False
   
