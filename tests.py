@@ -1,4 +1,4 @@
-from chodewars import game,player
+from chodewars import game,player,sector
 
 game_obj = None
 return_val = None #Global object variable, assigned by action, used by main script
@@ -13,16 +13,23 @@ class Action(object):
   
   def run(self):
     #perform action
+    global return_val #get the global var for writing
     actions = self.action.split(" ")
     if actions[0] == "create":
-      global return_val #get the global var for writing
       if actions[1] == "game":
         global game_obj
         game_obj = game.Game()
         self.result = "return_true" if game_obj else "return_false"
       if actions[1] == "player":
-        return_val = game_obj.add_player(player.Player("email@email.com","Test Player"))
-        self.result = "return_id" if len(return_val) is 36 else "return_string"
+        print "\tcreating player..."
+        created_player = game_obj.add_player(player.Player("email@email.com","Test Player"))
+        print "\tcreating home sector with planet and ship..."
+        val = game_obj.assign_home_sector(created_player,"Test Planet","Test Ship") if created_player else None
+        self.result = "return_true" if val else "return_false"
+    if actions[0] == "get":
+      if actions[1] == "player":
+        if len(actions[2]) > 0:
+          return "return_obj" if game_obj.get_player_by_id(actions[2]) else "return_none"
     
     #was expected result satisfied?
     if self.result == self.expected_result:
@@ -42,6 +49,7 @@ class Test(object):
     
   def run(self):
     for action in self.actions:
+      print "Action: %s" % action.title
       if action.run():
         pass
       else:
@@ -61,8 +69,15 @@ create_game.add(Action("Init Game","create game","return_true"))
 tests.append(create_game)
 
 create_player = Test("create a new player")
-create_player.add(Action("Add Player","create player","return_id"))
+create_player.add(Action("Add Player","create player","return_true"))
 tests.append(create_player)
+
+load_player = Test("load a player by id")
+load_player.add(Action("Load Player","get player email@email.com","return_id"))
+tests.append(load_player)
+
+#move_player = Test("move a player to a new sector")
+#move_player.add
 
 for test in tests:
   print "Test: %s" % test.title
