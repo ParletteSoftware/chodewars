@@ -2,6 +2,7 @@ import os
 import logging
 import random
 import shutil
+import json
 
 from player import Player
 from cluster import Cluster
@@ -64,12 +65,24 @@ class Database(object):
     pass
   
   def save_object(self,obj):
-    """Save a game object to the database."""
-    pass
+    """Save a game object to the database.
+    
+    Returns the id of the added object."""
+    return None
+  
+  def load_object(self,id):
+    """Load an object and return it."""
+    return None
+  
+  def load_object_by_name(self,name):
+    """Load an object from the database by name.
+    
+    This may be slower depending on database type."""
+    return None
   
   def add_player(self,player):
     """Add a player to the database."""
-    pass
+    return self.save_object(player)
   
   def get_player(self,player_name = None):
     """Retrieve a player account."""
@@ -77,11 +90,11 @@ class Database(object):
   
   def get_player_by_id(self,player_id):
     """Retrieve a player account by id."""
-    return None
+    return load_object(player_id)
   
   def add_cluster(self,cluster):
     """Add a cluster to the database."""
-    pass
+    return self.save_object(cluster)
   
   def get_cluster(self,cluster_name):
     """Retrieve a cluster."""
@@ -89,15 +102,16 @@ class Database(object):
     
   def add_sector(self,sector):
     """Add a sector to the given cluster. The cluster is pulled from the Sector object."""
-    return None
+    return self.save_object(sector)
   
   def get_sector(self,cluster,sector_name):
     """Retrieve a list of all items in a sector."""
-    return None
+    #TODO: change sector names to include cluster everywhere?
+    return self.load_object_by_name(sector_name)
   
   def add_planet(self,planet):
     """Save a planet objet to the database. Planet names must be unique."""
-    return None
+    return self.save_object(planet)
   
   def get_planet(self,planet_name):
     """Retrieve a planet from the database."""
@@ -105,7 +119,7 @@ class Database(object):
   
   def add_ship(self,ship):
     """Add a new ship to the database."""
-    return None
+    return self.save_object(ship)
   
   def get_ship(self,ship_name):
     """Retrieve a ship from the database with the given name."""
@@ -115,7 +129,7 @@ class FlatFileDatabase(Database):
   def db_exists(self):
     if self.path:
       if os.path.exists(self.path):
-        self.log.debug("db_exists(): %s exists, returning True" % self.path)
+        #self.log.debug("db_exists(): %s exists, returning True" % self.path)
         return True
     else:
       self.log.error("db_exists(): FlatFileDatabase instance variable 'path' is not defined")
@@ -179,135 +193,61 @@ class FlatFileDatabase(Database):
   
   def save_object(self,obj):
     """Save a game object to the database."""
-    object_class = obj.__class__.__name__
-    
-    if object_class == "Player":
-      return self._write_file(obj,"%s.player" % obj.name)
-    if object_class == "Cluster":
-      return self._write_file(obj,"%s.cluster" % obj.name)
-    if object_class == "Sector":
-      return self._write_file(obj,"%s.sector" % os.path.join(obj.parent.name,str(obj.name)))
-    if object_class == "Planet":
-      return self._write_file(obj,"%s.planet" % obj.name)
-    if object_class == "Ship":
-      return self._write_file(obj,"%s.ship" % obj.name)
-    
-    return False
+    self.log.debug("Saving object: %s" % str(obj))
+    return obj if self._write_json(obj,str(obj.id)) else None
   
-  def _read_file(self,filename):
-    """Read an object from a file. The file should be verified as existing before this is called."""
-    self.log.debug("_read_file(): Opening %s for reading" % os.path.join(self.path,filename))
-    f = open(os.path.join(self.path,filename),'r')
-    extension = filename.split('.')[-1]
-    self.log.debug("_read_file(): Extension for %s read as %s" % (filename,extension))
-    with f:
-      if extension == "player":
-        id = f.readline().strip()
-        name = f.readline().strip()
-        #cluster_name = f.readline().strip()
-        #sector_name = f.readline().strip()
-        ship_name = f.readline().strip()
-        f.close()
-        #cluster = self.get_cluster(cluster_name)
-        #sector = self.get_sector(cluster,sector_name) if cluster else None
-        ship = self.get_ship(ship_name)
-        p = Player(id,name,ship = ship)
-        return p
-      if extension == "cluster":
-        name = f.readline().strip()
-        x = f.readline().strip()
-        y = f.readline().strip()
-        f.close()
-        return Cluster(name,x,y)
-      if extension == "sector":
-        cluster_name = f.readline().strip()
-        #This looks strange because the path for the sector has the cluster in it
-        name = filename.split('/')[-1].split('.')[0]
-        f.close()
-        cluster = self.get_cluster(cluster_name)
-        #self.log.debug("_read_file(): While loading sector, cluster loaded as %s" % cluster)
-        return Sector(cluster,name) if cluster else None
-      if extension == "planet":
-        cluster_name = f.readline().strip()
-        sector_name = f.readline().strip()
-        name = f.readline().strip()
-        f.close()
-        cluster = self.get_cluster(cluster_name)
-        sector = self.get_sector(cluster,sector_name) if cluster else None
-        return Planet(sector,name) if sector else None
-      if extension == "ship":
-        name = f.readline().strip()
-        cluster_name = f.readline().strip()
-        sector_name = f.readline().strip()
-        holds = f.readline().strip()
-        f.close()
-        cluster = self.get_cluster(cluster_name)
-        sector = self.get_sector(cluster,sector_name) if cluster else None
-        return Ship(name,sector,holds) if name else None
-    self.log.error("_read_file(): Error opening %s for reading" % os.path.join(self.path,filename))
+  def load_object(self,id):
+    """Load an object and return it."""
+    if os.path.exists(os.path.join(self.path,str(id))):
+      return self._read_json(str(id))
+  
+  def load_object_by_name(self,name):
+    """Load an object from the database by name.
+    
+    This is slow for this database type."""
+    for f in os.listdir(self.path):
+      o = self.load_object(f)
+      self.log.debug("load_object() returned %s, checking it for name of %s" % (str(o),name))
+      if o and o.name == name:
+        self.log.info("load_object_by_name(): Found object %s matching name parameter of %s" % (str(o),name))
+        self.log.debug("load_object_by_name(): %s dictionary: %s" % (str(o),o.to_dict()))
+        return o
+    self.log.info("load_object_by_name(): No object found with name %s, returning None" % name)
     return None
   
-  def _write_file(self,obj,filename):
-    """Wrtie the player object to file, overwriting whatever is there."""
-    object_class = obj.__class__.__name__
-    
-    if object_class == "Sector":
-      #For a sector, we need to verify that the cluster dir exists before proceeding
-      self.log.debug("_write_file(): Verifying that cluster dir %s exists" % obj.cluster.name)
-      self._verify_cluster_dir(obj.cluster)
-    
-    self.log.debug("_write_file(): Opening %s for writing" % os.path.join(self.path,filename))
-    f = open(os.path.join(self.path,filename),'w')
+  def _write_json(self,obj,filename):
+    """Convert the object's dictionary into json."""
+    f = open(os.path.join(self.path,str(filename)),'w')
     with f:
-      self.log.debug("_write_file(): obj parameter type is %s" % object_class)
-      if object_class == "Player":
-        self.log.debug("_write_file(): Writing player object %s" % str(obj.to_dict()))
-        f.write("%s\n" % obj.id)
-        f.write("%s\n" % obj.name)
-        #f.write("%s\n" % obj.sector.parent.name if obj.sector else "None"
-        #f.write("%s\n" % obj.sector.name if obj.sector else str(None))
-        f.write("%s\n" % obj.ship.name if obj.ship else "None\n")
-      if object_class == "Cluster":
-        f.write("%s\n" % obj.name)
-        f.write("%s\n" % obj.x)
-        f.write("%s\n" % obj.y)
-      if object_class == "Sector":
-        f.write("%s\n" % obj.parent.name)
-        f.write("%s\n" % obj.name)
-      if object_class == "Planet":
-        f.write("%s\n" % obj.parent.parent.name)
-        f.write("%s\n" % obj.parent.name)
-        f.write("%s\n" % obj.name)
-      if object_class == "Ship":
-        f.write("%s\n" % obj.name)
-        #Cluster
-        f.write("%s\n" % obj.parent.parent.name if obj.parent and obj.parent.parent else "None\n")
-        #Sector
-        f.write("%s\n" % obj.parent.name if obj.parent else "None\n")
-        f.write("%s\n" % obj.holds)
+      self.log.debug("Attempting to JSON-ify dictionary %s" % obj.to_dict())
+      s = json.dumps(obj.to_dict())
+      s = s.replace("True","true").replace("False","false")
+      self.log.debug("Attempting to write json %s to %s" % (s,f))
+      f.write(s)
       f.close()
-      self.log.info("Wrote %s %s to %s" % (object_class,obj,f))
+      self.log.info("_write_json(): Wrote %s to %s" % (s,f))
       return True
-    self.log.error("_write_file(): Error opening %s for writing" % os.path.join(self.path,filename))
+    self.log.error("_write_json(): Error opening %s for writing" % os.path.join(self.path,filename))
     return False
   
-  def add_player(self,player):
-    """Create a file for the player if it doesn't already exist."""
-    if self.db_exists():
-      if self.get_player(player.name) is None:
-        if self.save_object(player):
-          self.log.debug("add_player(): Player %s successfully added" % player.name)
-          return True
-        else:
-          self.log.error("add_player(): Error writing to player file")
-          return False
-      else:
-        self.log.error("add_player(): Player already exists")
-        return False
-    else:
-      self.log.error("add_player(): Database does not exist, aborting...")
-      return False
-  
+  def _read_json(self,filename):
+    """Read a file's content as json to create an object."""
+    self.log.debug("_read_file(): Opening %s for reading" % os.path.join(self.path,filename))
+    f = open(os.path.join(self.path,filename),'r')
+    with f:
+      json_str = f.read()
+      self.log.debug("JSON read from file as string: %s" % json_str)
+      try:
+        json_dict = json.loads(json_str)
+        self.log.debug("JSON converted to dictionary: %s" % str(json_dict))
+        #TODO: Can this be generic? To create a class from a variable?
+        if json_dict['type'] == "Cluster":
+          return Cluster("c",1,1,dict_values = json_dict)
+        if json_dict['type'] == "Player":
+          return Player(filename,"name",dict_values = json_dict)
+      except TypeError,te:
+        self.log.error("File %s does not appear to be valid JSON: %s" % (filename,te))
+
   def get_player(self,player_name):
     """Verify a player file exists and load that Player object."""
     if self.db_exists():
@@ -321,44 +261,6 @@ class FlatFileDatabase(Database):
         return None
     else:
       self.log.error("get_player(): Database does not exist, aborting...")
-      return None
-  
-  def get_player_by_id(self,player_id):
-    """Go through each .player file to find the specified id."""
-    self.log.debug("get_player_by_id(): Searching for player with id %s" % player_id)
-    for f in os.listdir(self.path):
-      if f.endswith(".player"):
-        p = self.get_player(f.split('.')[0])
-        if p:
-          self.log.debug("get_player_by_id(): Player returned from get_player('%s') was %s" % (f,str(p.to_dict())))
-          if p.id == player_id:
-            self.log.debug("get_player_by_id(): Found id %s in %s, returning %s" % (player_id,f,p.name))
-            return p
-        else:
-          self.log.debug("get_player_by_id(): Player returned from get_player('%s') was None" % f)
-    
-    self.log.debug("Player id %s was not found in the database, returning None" % player_id)
-    return None
-    
-  def add_cluster(self,cluster):
-    """Create a directory for this cluster if it doesn't already exist. Return the created cluster."""
-    if self.db_exists():
-      loaded_cluster = self.get_cluster(cluster.name)
-      if loaded_cluster is None:
-        if self.save_object(cluster):
-          self.log.debug("add_cluster(): Cluster file %s.cluster successfully added" % cluster.name)
-          #Make a directory with the cluster's name
-          if self._verify_cluster_dir(cluster):
-            self.log.debug("add_cluster(): cluster directory exists")
-          return cluster
-        else:
-          self.log.error("add_cluster(): Error writing to cluster file")
-          return None
-      else:
-        self.log.debug("add_cluster(): Cluster already exists, returning cluster %s as loaded from file" % loaded_cluster.name)
-        return loaded_cluster
-    else:
-      self.log.error("add_cluster(): Database does not exist, aborting...")
       return None
   
   def _verify_cluster_dir(self,cluster):
@@ -386,64 +288,6 @@ class FlatFileDatabase(Database):
     else:
       self.log.error("get_cluster(): Database does not exist, aborting...")
       return None
-    
-  def add_sector(self,sector):
-    """Add a sector to the a cluster."""
-    if self.db_exists():
-      loaded_sector = self.get_sector(sector.cluster,sector.name)
-      if loaded_sector is None:
-        if self.save_object(sector):
-          self.log.debug("add_sector(): Sector file %s.sector successfully added to cluster dir %s" % (sector.name,sector.cluster.name))
-          return sector
-        else:
-          self.log.error("add_sector(): Error writing to sector file")
-          return None
-      else:
-        self.log.debug("add_sector(): Sector already exists, returning sector %s/%s as loaded from file" % (loaded_sector.cluster.name,loaded_sector.name))
-        return loaded_sector
-    else:
-      self.log.error("add_sector(): Database does not exist, aborting...")
-      return None
-  
-  def get_sector(self,cluster,sector_name,add = False):
-    """Retrieve a list of all items in a sector.
-    
-    If add is True, then the sector will be added to the database."""
-    if not cluster: return None
-    if self.db_exists():
-      self.log.debug("get_sector(): Retrieving sector %s in cluster %s" % (sector_name,str(cluster)))
-      sector_file_path = os.path.join(self.path,cluster.name,"%s.sector" % sector_name)
-      if os.path.exists(sector_file_path):
-        self.log.debug("get_sector(): Sector file %s was found, calling _read_file()" % sector_file_path)
-        return self._read_file("%s.sector" % os.path.join(cluster.name,str(sector_name)))
-      else:
-        if add:
-          self.log.debug("get_sector(): Sector file %s was not found, adding sector via add_sector()" % sector_file_path)
-          return self.add_sector(Sector(cluster,sector_name))
-        else:
-          self.log.debug("get_sector(): Sector file %s was not found, returning None" % sector_file_path)
-          return None
-    else:
-      self.log.error("get_sector(): Database does not exist, aborting...")
-      return None
-  
-  def add_planet(self,planet):
-    """Save a planet objet to the database. Planet names must be unique."""
-    if self.db_exists():
-      loaded_planet = self.get_planet(planet.name)
-      if loaded_planet is None:
-        if self.save_object(planet):
-          self.log.debug("add_planet(): Planet file %s.planet successfully added" % planet.name)
-          return True
-        else:
-          self.log.error("add_planet(): Erro writing planet to file")
-          return False
-      else:
-        self.log.debug("add_planet(): Planet already exists, returning False")
-        return False
-    else:
-      self.log.debug("add_planet(): Database does not exist, aborting...")
-      return False
   
   def get_planet(self,planet_name):
     """Retrieve a planet from the database."""
@@ -460,24 +304,6 @@ class FlatFileDatabase(Database):
       self.log.error("get_planet(): Database does not exist, aborting...")
       return None
 
-  def add_ship(self,ship):
-    """Add a new ship to the database."""
-    if self.db_exists():
-      loaded_ship = self.get_ship(ship.name)
-      if loaded_ship is None:
-        if self.save_object(ship):
-          self.log.debug("add_ship(): Ship file %s.ship successfully added" % ship.name)
-          return True
-        else:
-          self.log.error("add_ship(): Error writing ship to file")
-          return False
-      else:
-        self.log.debug("add_ship(): Ship already exists, returning False")
-        return False
-    else:
-      self.log.debug("add_ship(): Database does not exist, aborting...")
-      return False
-  
   def get_ship(self,ship_name):
     """Retrieve a ship from the database with the given name."""
     if self.db_exists():

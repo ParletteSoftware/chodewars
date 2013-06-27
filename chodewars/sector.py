@@ -6,7 +6,7 @@ class Sector(Entity):
     super(Sector,self).__init__(name,parent = cluster)
     
     #Deprecated, use self.parent instead
-    self.cluster = self.parent
+    #self.cluster = self.parent
     
   def __repr__(self):
     return "%s-%s" % (self.parent.name,str(self.name))

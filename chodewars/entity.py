@@ -2,23 +2,35 @@ from uuid import uuid4
 
 class Entity(object):
   def __init__(self,
-               name,
+               name = "Entity",
                id = uuid4(),
                parent = None,
-               children = []):
-    #Each entity should have a unique ID
-    self.id = id
-    self.name = name
+               children = [],
+               dict_values = None):
     
-    #One parent
-    self.parent = parent
-    #Many children
-    self.children = children
+    #If dict_values is provided, then this is a load
+    if dict_values:
+      for key,value in dict_values.iteritems():
+        #print "%s => %s" % (str(key),str(value))
+        self.__dict__[key] = value
+      #print "dict is now: %s" % str(self.__dict__)
     
-    self.landable = False
-    self.tradeable = False
-    self.dockable = False
-    self.scanable = False
+    #Otherwise, this is a new object creation
+    else:
+      #Each entity should have a unique ID
+      self.id = id
+      self.name = name
+      self.type = self.__class__.__name__
+      
+      #One parent
+      self.parent = parent
+      #Many children
+      self.children = children
+      
+      self.landable = False
+      self.tradeable = False
+      self.dockable = False
+      self.scanable = False
   
   def __repr__(self):
     return str(self.name)
@@ -40,7 +52,16 @@ class Entity(object):
     
     #We don't want to modify the instance's dictionary, so we make a copy first
     d = dict(self.__dict__)
-    d['parent'] = str(d['parent'].id)
+    
+    #Convert the id value to a string
+    d['id'] = str(self.id)
+    
+    #Convert the parent object to an id string
+    d['parent'] = str(d['parent'].id) if d['parent'] else None
+    
+    #Convert all child objects into a list of id strings
     for child in d['children']:
       d['children'][child] = str(child.id)
     return d
+
+  #TODO: load_from_dict()?

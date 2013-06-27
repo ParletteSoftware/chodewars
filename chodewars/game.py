@@ -2,6 +2,8 @@ import logging
 import db
 import random
 
+from collections import deque
+
 from player import Player
 from cluster import Cluster
 from sector import Sector
@@ -12,7 +14,7 @@ class Game(object):
   def __init__(self):
     #Setup logging for this module
     self.log = logging.getLogger('chodewars.game')
-    self.log.setLevel(logging.INFO)
+    self.log.setLevel(logging.DEBUG)
     
     #Log Format
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -33,6 +35,9 @@ class Game(object):
     #Setup instance variables
     self.db = None
     self.clusters = {}
+    
+    #Output a header to the log
+    self.log.info("\n%s\nGame Initialized: %s\n%s" % ("_" * 20,"","_" * 20))
     
     #Finish loading the Game object
     self.load_config()
@@ -71,12 +76,14 @@ class Game(object):
   def add_player(self,player):
     if self.db and player:
       self.log.debug("Adding player %s" % player.name)
-      return self.db.add_player(player)
+      result = self.db.add_player(player)
+      self.log.debug("add_player() returning %s" % result)
+      return result
   
   def get_player_by_id(self,player_id):
     if self.db:
       self.log.debug("Retrieving player account for id %s" % player_id)
-      return self.db.get_player_by_id(player_id)
+      return self.db.load_object(player_id)
   
   def load_object(self,object_type,name,parent_name = None):
     """Load an object from the database.
@@ -92,11 +99,16 @@ class Game(object):
     """Load the clusters instance variable from the database using the list in the config."""
     for c in self.cluster_list:
       self.log.debug("Loading cluster %s" % c)
-      self.clusters[c] = self.db.add_cluster(Cluster(c,self.cluster_size,self.cluster_size))
+      self.clusters[c] = self.db.load_object_by_name(c)
       if self.clusters[c]:
         self.log.debug("Cluster %s has been loaded" % c)
       else:
-        self.log.error("Cluster %s was not successfully loaded. This should be fixed before proceeding. See the logfile for details." % c)
+        added_cluster = self.db.add_cluster(Cluster(c,self.cluster_size,self.cluster_size))
+        if added_cluster:
+          self.clusters[c] = self.db.load_object(added_cluster.id)
+          self.log.debug("Cluster %s did not exist, but has been added" % c)
+        else:
+          self.log.error("Cluster %s was not successfully loaded. This should be fixed before proceeding. See the logfile for details." % c)
     if self.clusters:
       self.log.debug("Clusters initialized: %s" % str(self.clusters))
     else:
@@ -105,6 +117,7 @@ class Game(object):
   def _find_empty_sector(self):
     """Return a random empty sector."""
     #Pick a cluster
+    self.log.debug("_find_empty_sector(): Choosing random cluster from %s" % str(self.clusters))
     random_cluster = self.clusters[random.choice(self.clusters.keys())]
     self.log.debug("Random cluster selected as %s" % random_cluster)
     
@@ -114,22 +127,22 @@ class Game(object):
       random_sector = self.db.get_sector(random_cluster,random_sector_name)
       if not random_sector:
         empty_sector = Sector(random_cluster,random_sector_name)
-    self.log.debug("Empty sector found: %s" % empty_sector)
+    self.log.info("Empty sector found, returning %s" % empty_sector)
     return empty_sector
   
-  def assign_home_sector(self,player,planet_name):
+  def assign_home_sector(self,player,planet_name,ship_name):
     """Find an unused sector and assign this player to it."""
     home_sector = self._find_empty_sector()
-    self.log.debug("assign_home_sector(): Adding sector %s" % home_sector.name)
+    self.log.debug("assign_home_sector(): Home sector determined to be %s" % home_sector.name)
     if self.db.add_sector(home_sector):
-      planet = Planet(home_sector,planet_name)
-      self.log.debug("assign_home_sector(): Adding planet %s to database" % planet)
-      self.db.add_planet(planet)
-      self.log.debug("assign_home_sector(): Moving player to sector %s" % home_sector.name)
-      player.parent.parent = home_sector
+      #planet = Planet(home_sector,planet_name)
+      #self.log.debug("assign_home_sector(): Adding planet %s to database" % planet)
+      #self.db.add_planet(planet)
+      #self.log.debug("assign_home_sector(): Moving player to sector %s" % home_sector.name)
+      #player.parent.parent = home_sector
       #TODO: Test this process
-      self.db.save_object(player)
-      self.db.save_object(player.parent)
+      #self.db.save_object(player)
+      #self.db.save_object(player.parent)
       return True
     else:
       self.log.error("assign_home_sector(): db.add_sector() returned None, so the sector was not successfully created")
@@ -267,3 +280,16 @@ class Game(object):
     
     return False
     
+class Cache(deque):
+  """Hold a cache of objects of a limited size. When the cache is full, the oldest item is removed from the left."""
+  def __init__(self,size,database):
+    super(Cache,self).__init__()
+    self.size = size
+    self.db = database
+  
+  def get(self,id):
+    if id in self:
+      return self[id]
+    else:
+      #Load item from database
+      self.db.load()
