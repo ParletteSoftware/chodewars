@@ -29,7 +29,9 @@ class Action(object):
     if actions[0] == "get":
       if actions[1] == "player":
         if len(actions[2]) > 0:
-          return "return_obj" if game_obj.get_player_by_id(actions[2]) else "return_none"
+          loaded_object = game_obj.get_player_by_id(actions[2])
+          print "\tloaded object %s" % loaded_object
+          return "return_obj" if loaded_object else "return_none"
     
     #was expected result satisfied?
     if self.result == self.expected_result:
