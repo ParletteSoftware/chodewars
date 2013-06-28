@@ -208,6 +208,7 @@ class FlatFileDatabase(Database):
     for f in os.listdir(self.path):
       o = self.load_object(f)
       self.log.debug("load_object() returned %s, checking it for name of %s" % (str(o),name))
+      #TODO: support sectors with cluster_name-name
       if o and o.name == name:
         self.log.info("load_object_by_name(): Found object %s matching name parameter of %s" % (str(o),name))
         self.log.debug("load_object_by_name(): %s dictionary: %s" % (str(o),o.to_dict()))
@@ -243,8 +244,16 @@ class FlatFileDatabase(Database):
         #TODO: Can this be generic? To create a class from a variable?
         if json_dict['type'] == "Cluster":
           return Cluster(initial_state = json_dict)
-        if json_dict['type'] == "Player":
+        elif json_dict['type'] == "Sector":
+          return Sector(initial_state = json_dict)
+        elif json_dict['type'] == "Player":
           return Player(initial_state = json_dict)
+        elif json_dict['type'] == "Planet":
+          return Planet(initial_state = json_dict)
+        elif json_dict['type'] == "Ship":
+          return Ship(initial_state = json_dict)
+        else:
+          return Entity(initial_state = json_dict)
       except TypeError,te:
         self.log.error("File %s does not appear to be valid JSON: %s" % (filename,te))
 

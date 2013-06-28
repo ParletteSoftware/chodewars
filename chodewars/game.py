@@ -76,6 +76,31 @@ class Game(object):
       self.log.info("Executing Big Bang")
       return self.db.big_bang()
   
+  def get_parent(self,entity):
+    """Return the parent object for the given entity"""
+    return self.db.load_object(entity.parent) if entity.parent else None
+  
+  def get_children(self,entity):
+    """Return a list of child objects for the given entity"""
+    children = []
+    for child_id in entity.children:
+      children.append(self.db.load_object(child_id))
+    return children
+  
+  def assign_child(self,parent,child):
+    """Assign a child to a parent object and save both objects"""
+    self.log.debug("Assigning %s as a child of %s" % (child,parent))
+    if child.id in parent.children:
+      self.log.debug("%s is already a child of %s" % (child,parent))
+      return True
+    if parent.add_child(child):
+      child.parent = parent.id
+      self.save_object(parent)
+      self.save_object(child)
+      self.log.debug("Added child %s to %s" % (child,parent))
+      return True
+    return False
+  
   def add_player(self,player):
     if self.db and player:
       self.log.debug("Adding player %s" % player.name)
@@ -87,6 +112,9 @@ class Game(object):
     if self.db:
       self.log.debug("Retrieving player account for id %s" % player_id)
       return self.db.load_object(player_id)
+  
+  def save_object(self,entity):
+    return self.db.save_object(entity)
   
   def load_object(self,object_type,name,parent_name = None):
     """Load an object from the database.
@@ -138,14 +166,17 @@ class Game(object):
     home_sector = self._find_empty_sector()
     self.log.debug("assign_home_sector(): Home sector determined to be %s" % home_sector.name)
     if self.db.add_sector(home_sector):
-      #planet = Planet(home_sector,planet_name)
-      #self.log.debug("assign_home_sector(): Adding planet %s to database" % planet)
-      #self.db.add_planet(planet)
-      #self.log.debug("assign_home_sector(): Moving player to sector %s" % home_sector.name)
-      #player.parent.parent = home_sector
-      #TODO: Test this process
-      #self.db.save_object(player)
-      #self.db.save_object(player.parent)
+      #Create planet
+      planet = Planet(initial_state = {'name':planet_name})
+      self.log.debug("assign_home_sector(): Adding planet %s" % planet)
+      self.assign_child(home_sector,planet)
+      
+      #Create ship
+      ship = Ship(initial_state = {'name':ship_name})
+      self.assign_child(home_sector,ship)
+      
+      #Move player to ship
+      self.assign_child(ship,player)
       return True
     else:
       self.log.error("assign_home_sector(): db.add_sector() returned None, so the sector was not successfully created")

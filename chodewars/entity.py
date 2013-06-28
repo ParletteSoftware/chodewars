@@ -11,7 +11,7 @@ class Entity(object):
     self.type = initial_state['type'] if 'type' in initial_state else self.__class__.__name__
     
     #Parent is the id of this entity's parent
-    self.parent = initial_state['parent'] if 'parent' in initial_state else None
+    self.parent = str(initial_state['parent']) if 'parent' in initial_state else None
     #Children is a list of ids that belong to this entity
     self.children = initial_state['children'] if 'children' in initial_state else []
     
@@ -45,9 +45,22 @@ class Entity(object):
     d['id'] = str(self.id)
     
     #Convert the parent object to an id string
-    d['parent'] = str(d['parent']) if d['parent'] else None
+    d['parent'] = str(self.parent) if self.parent else None
     
     #Convert all child objects into a list of id strings
-    for child in d['children']:
-      d['children'][child] = str(child)
+    #print "children: %s" % str(self.children)
+    #for child in self.children:
+      #d['children'].append(str(child))
     return d
+  
+  def add_child(self,child):
+    """Add a child object to this entity.
+    
+    Returns boolean on if this was successful"""
+    
+    if str(child.id) in self.children:
+      return True
+    else:
+      self.children.append(str(child.id))
+      return True
+    return False
