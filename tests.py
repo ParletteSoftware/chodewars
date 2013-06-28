@@ -23,11 +23,11 @@ class Action(object):
       if actions[1] == "player":
         print "\tcreating player..."
         created_player = game_obj.add_player(player.Player(initial_state={'id':"email@email.com",'name':"Test Player"}))
-        val = None
+        self.result = "return_true" if created_player else "return_false"
         if created_player.parent is None:
           print "\tcreating home sector with planet and ship..."
-          val = game_obj.assign_home_sector(created_player,"Test Planet","Test Ship") if created_player else None
-        self.result = "return_true" if val else "return_false"
+          self.result = "return_true" if game_obj.assign_home_sector(created_player,"Test Planet","Test Ship") else "return_false"
+        
     if actions[0] == "get":
       loaded_object = None
       if actions[1] == "player":

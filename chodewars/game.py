@@ -103,10 +103,16 @@ class Game(object):
   
   def add_player(self,player):
     if self.db and player:
-      self.log.debug("Adding player %s" % player.name)
-      result = self.db.add_player(player)
-      self.log.debug("add_player() returning %s" % result)
-      return result
+      loaded_player = self.db.load_object(id=str(player.id))
+      if loaded_player:
+        self.log.info("Player %s already exists, but add_player was called. Nothing is changed and the existing player is being returned")
+        return loaded_player
+      else:
+        self.log.debug("Adding player %s" % player.name)
+        result = self.db.add_player(player)
+        self.log.debug("add_player() returning %s" % result)
+        return result
+    return None
   
   def get_player_by_id(self,player_id):
     if self.db:
@@ -162,7 +168,13 @@ class Game(object):
     return empty_sector
   
   def assign_home_sector(self,player,planet_name,ship_name):
-    """Find an unused sector and assign this player to it."""
+    """Find an unused sector and assign this player to it.
+    
+    This should only run if the player doesn't have a parent (which means they don't have a ship).'"""
+    if player.parent:
+      self.log.debug("assign_home_sector(): Player %s already has a parent, returning True" % player.name)
+      return True
+    
     home_sector = self._find_empty_sector()
     self.log.debug("assign_home_sector(): Home sector determined to be %s" % home_sector.name)
     if self.db.add_sector(home_sector):
