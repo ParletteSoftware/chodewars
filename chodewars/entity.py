@@ -1,36 +1,24 @@
 from uuid import uuid4
 
 class Entity(object):
-  def __init__(self,
-               name = "Entity",
-               id = uuid4(),
-               parent = None,
-               children = [],
-               dict_values = None):
+  def __init__(self,initial_state = {}):
     
-    #If dict_values is provided, then this is a load
-    if dict_values:
-      for key,value in dict_values.iteritems():
-        #print "%s => %s" % (str(key),str(value))
-        self.__dict__[key] = value
-      #print "dict is now: %s" % str(self.__dict__)
+    """We set each value from the initial_state dictionary if it is exists, otherwise set it to default."""
+    self.id = initial_state['id'] if 'id' in initial_state else uuid4()
     
-    #Otherwise, this is a new object creation
-    else:
-      #Each entity should have a unique ID
-      self.id = id
-      self.name = name
-      self.type = self.__class__.__name__
-      
-      #One parent
-      self.parent = parent
-      #Many children
-      self.children = children
-      
-      self.landable = False
-      self.tradeable = False
-      self.dockable = False
-      self.scanable = False
+    self.name = initial_state['name'] if 'name' in initial_state else "Entity"
+    
+    self.type = initial_state['type'] if 'type' in initial_state else self.__class__.__name__
+    
+    #Parent is the id of this entity's parent
+    self.parent = initial_state['parent'] if 'parent' in initial_state else None
+    #Children is a list of ids that belong to this entity
+    self.children = initial_state['children'] if 'children' in initial_state else []
+    
+    self.landable = initial_state['landable'] if 'landable' in initial_state else False
+    self.tradeable = initial_state['tradeable'] if 'tradeable' in initial_state else False
+    self.dockable = initial_state['dockable'] if 'dockable' in initial_state else False
+    self.scanable = initial_state['scanable'] if 'scanable' in initial_state else False
   
   def __repr__(self):
     return str(self.name)
@@ -57,11 +45,9 @@ class Entity(object):
     d['id'] = str(self.id)
     
     #Convert the parent object to an id string
-    d['parent'] = str(d['parent'].id) if d['parent'] else None
+    d['parent'] = str(d['parent']) if d['parent'] else None
     
     #Convert all child objects into a list of id strings
     for child in d['children']:
-      d['children'][child] = str(child.id)
+      d['children'][child] = str(child)
     return d
-
-  #TODO: load_from_dict()?

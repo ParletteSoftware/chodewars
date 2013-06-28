@@ -22,7 +22,7 @@ class Action(object):
         self.result = "return_true" if game_obj else "return_false"
       if actions[1] == "player":
         print "\tcreating player..."
-        created_player = game_obj.add_player(player.Player("email@email.com","Test Player"))
+        created_player = game_obj.add_player(player.Player(initial_state={'id':"email@email.com",'name':"Test Player"}))
         print "\tcreating home sector with planet and ship..."
         val = game_obj.assign_home_sector(created_player,"Test Planet","Test Ship") if created_player else None
         self.result = "return_true" if val else "return_false"
@@ -79,7 +79,7 @@ load_player.add(Action("Load Player","get player email@email.com","return_id"))
 tests.append(load_player)
 
 #move_player = Test("move a player to a new sector")
-#move_player.add
+#move_player.add(Action("Move Player","move player to an adjacent sector")
 
 for test in tests:
   print "Test: %s" % test.title

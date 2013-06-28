@@ -242,9 +242,9 @@ class FlatFileDatabase(Database):
         self.log.debug("JSON converted to dictionary: %s" % str(json_dict))
         #TODO: Can this be generic? To create a class from a variable?
         if json_dict['type'] == "Cluster":
-          return Cluster("c",1,1,dict_values = json_dict)
+          return Cluster(initial_state = json_dict)
         if json_dict['type'] == "Player":
-          return Player(filename,"name",dict_values = json_dict)
+          return Player(initial_state = json_dict)
       except TypeError,te:
         self.log.error("File %s does not appear to be valid JSON: %s" % (filename,te))
 

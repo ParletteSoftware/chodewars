@@ -11,7 +11,7 @@ from planet import Planet
 from ship import Ship
 
 class Game(object):
-  def __init__(self):
+  def __init__(self,bigbang = False):
     #Setup logging for this module
     self.log = logging.getLogger('chodewars.game')
     self.log.setLevel(logging.DEBUG)
@@ -42,7 +42,10 @@ class Game(object):
     #Finish loading the Game object
     self.load_config()
     self.connect_db()
-    self._load_clusters()
+    if bigbang:
+      self.big_bang()
+    else:
+      self._load_clusters()
   
   def load_config(self):
     self.log.debug("Loading configuration")
@@ -103,7 +106,7 @@ class Game(object):
       if self.clusters[c]:
         self.log.debug("Cluster %s has been loaded" % c)
       else:
-        added_cluster = self.db.add_cluster(Cluster(c,self.cluster_size,self.cluster_size))
+        added_cluster = self.db.add_cluster(Cluster(initial_state={'name':c,'x':self.cluster_size,'y':self.cluster_size}))
         if added_cluster:
           self.clusters[c] = self.db.load_object(added_cluster.id)
           self.log.debug("Cluster %s did not exist, but has been added" % c)
@@ -126,7 +129,7 @@ class Game(object):
       random_sector_name = random.randint(1,int(random_cluster.x)*int(random_cluster.y))
       random_sector = self.db.get_sector(random_cluster,random_sector_name)
       if not random_sector:
-        empty_sector = Sector(random_cluster,random_sector_name)
+        empty_sector = Sector(initial_state={'cluster_name':random_cluster.name,'name':random_sector_name})
     self.log.info("Empty sector found, returning %s" % empty_sector)
     return empty_sector
   
