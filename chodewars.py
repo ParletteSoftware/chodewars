@@ -1,6 +1,7 @@
 import tornado.ioloop
 import tornado.web
 import tornado.auth
+import tornado.escape
 import os.path
 import logging
 import datetime
@@ -25,7 +26,7 @@ class Application(tornado.web.Application):
       (r"/login", LoginHandler),
       (r"/logout", LogoutHandler),
       (r"/add/([\w]*)", AddHandler),
-      (r"/c/([\w]*)/([\w]*)", CommandHandler),
+      (r"/c/([\w]*)/", CommandHandler),
     ]
     
     settings = dict(
@@ -64,10 +65,15 @@ class MainHandler(BaseHandler):
   @tornado.web.authenticated
   def get(self):
     player = self.get_current_player()
+    ship = game.get_parent(player) if player else None
     if player: print "player loaded as %s" % str(player.to_dict())
+    if ship: print "ship loaded as %s" % str(ship.to_dict())
+    sector = game.get_parent(ship) if ship else None
     
-    for line in game.visualize_cluster(player):
-      print "%s\n" % line
+    #for line in game.visualize_cluster(player):
+      #print "%s\n" % line
+    
+    warps = game.get_available_warps(ship = ship) if player and ship else None
     
     self.render(
       "index.html",
@@ -76,7 +82,9 @@ class MainHandler(BaseHandler):
       footer_text = "Chodewars",
       user = self.current_user,
       player = player,
-      warps = game.get_available_warps(player)
+      ship = ship,
+      sector = sector,
+      warps = warps,
     )
 
 class LoginHandler(BaseHandler, tornado.auth.GoogleMixin):
@@ -115,7 +123,7 @@ class AddHandler(BaseHandler):
       if add_type == "player":
         name = self.get_argument('name','')
         print "Creating new player %s..." % name
-        if game.add_player(Player(self.current_user['email'],name)):
+        if game.add_player(Player(initial_state = {'id':self.current_user['email'],'name':name})):
           print "Player %s created" % name
         else:
           print "Error creating player %s" % name
@@ -123,36 +131,35 @@ class AddHandler(BaseHandler):
         #Player object should exist
         if add_type == "home":
           planet_name = self.get_argument('planet_name',None)
-          if planet_name:
+          ship_name = self.get_argument('ship_name',None)
+          if planet_name and ship_name:
             player = self.get_current_player()
             print "Creating home sector..."
-            if game.assign_home_sector(player,planet_name):
+            if game.assign_home_sector(player,planet_name,ship_name):
               print "...ok"
             else:
               print "Error assigning home sector for %s" % str(player)
           else:
-            print "planet_name was not received, nothing was created for this player"
-        if add_type == "ship":
-          ship_name = self.get_argument('ship_name',None)
-          if ship_name:
-            player = self.get_current_player()
-            print "Building player ship %s..." % ship_name
-            if game.build_ship(player,ship_name):
-              print "...ok"
-            else:
-              print "Error building ship for %s" % str(player)
+            print "planet_name or ship_name was not received, nothing was created for this player"
     else:
       print "Game is not initialized!"
         
     self.redirect("/")
 
 class CommandHandler(BaseHandler):
-  def get(self,command,argument):
+  def get(self,command):
+    print "cmd: %s" % str(command)
     player = self.get_current_player()
     if game:
       if command == "move":
-        if argument:
-          game.move_player(player,player.sector.cluster.name,argument)
+        print "\n\n---------------------"
+        sector_id = self.get_argument("sector",default = None, strip = True)
+        if sector_id:
+          sector = game.load_object_by_id(sector_id)
+          print "sector loaded as %s" % str(sector)
+          if sector:
+            print "Moving player"
+            game.move_ship(game.get_parent(player),sector)
     else:
       self.write("Game not initialized")
     
