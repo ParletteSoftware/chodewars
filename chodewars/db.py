@@ -209,13 +209,13 @@ class FlatFileDatabase(Database):
       self.log.debug("load_object() returned %s, checking it for name of %s" % (str(o),name))
       
       if o and o.name == name:
-        self.log.info("load_object_by_name(): Found object %s matching name parameter of %s" % (str(o),name))
+        self.log.debug("load_object_by_name(): Found object %s matching name parameter of %s" % (str(o),name))
         self.log.debug("load_object_by_name(): %s dictionary: %s" % (str(o),o.to_dict()))
         return o
       else:
         #Handle sectors
         if o and o.type == "Sector" and "%s-%s" % (o.cluster_name,o.name) == name:
-          self.log.info("load_object_by_name(): Found sector %s matching name parameter of %s" % (str(o),name))
+          self.log.debug("load_object_by_name(): Found sector %s matching name parameter of %s" % (str(o),name))
           return o
     self.log.info("load_object_by_name(): No object found with name %s, returning None" % name)
     return None

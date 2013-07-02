@@ -129,7 +129,9 @@ class Game(object):
   def get_player_by_id(self,player_id):
     if self.db:
       self.log.debug("Retrieving player account for id %s" % player_id)
-      return self.db.load_object(player_id)
+      player = self.db.load_object(player_id)
+      if player: self.log.debug("Returning player %s" % str(player.__dict__))
+      return player
   
   def save_object(self,entity):
     return self.db.save_object(entity)
@@ -137,6 +139,9 @@ class Game(object):
   def load_object(self,name):
     """Load an object from the database."""
     return self.db.load_object_by_name(name)
+  
+  def load_object_by_id(self,id):
+    return self.db.load_object(id)
   
   def _load_clusters(self):
     """Load the clusters instance variable from the database using the list in the config."""
@@ -228,8 +233,10 @@ class Game(object):
     
     return False
   
+  #TODO: take a sector or cluster as a parameter
   def visualize_cluster(self,player):
     """Get a visual map for the current cluster of the player."""
+    #TODO: player.sector no longer exists
     if player and player.sector:
       highlight_sector = player.sector
       cluster = player.sector.cluster
@@ -329,24 +336,6 @@ class Game(object):
       return new_sector
     
     return None
-  
-  def build_ship(self,player,ship_name):
-    if player:
-      ship = Ship(ship_name,player.sector)
-      if self.db.add_ship(ship):
-        player.ship = ship
-        if self.db.save_object(player):
-          self.log.debug("build_ship(): Ship created and player was updated with this ship")
-          return True
-        else:
-          self.log.error("build_ship(): Ship created but player was unable to be saved, so this player likely is not assigned to a ship")
-          return False
-      else:
-        self.log.error("build_ship(): db.add_ship returned False, player was not modified")
-    else:
-      self.log.error("build_ship(): Programming error, player cannot be None")
-    
-    return False
     
 class Cache(deque):
   """Hold a cache of objects of a limited size. When the cache is full, the oldest item is removed from the left."""

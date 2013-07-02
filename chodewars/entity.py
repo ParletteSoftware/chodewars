@@ -12,6 +12,10 @@ class Entity(object):
     
     #Parent is the id of this entity's parent
     self.parent = str(initial_state['parent']) if 'parent' in initial_state else None
+    ##However, if parent is loaded as the string "None", we should convert it to be python None
+    if self.parent == "None":
+      self.parent = None
+    
     #Children is a list of ids that belong to this entity
     self.children = initial_state['children'] if 'children' in initial_state else []
     

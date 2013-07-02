@@ -16,20 +16,16 @@
 {% block body %}
   {% if player %}
     <p>Welcome {{player.name}}</p>
-    {% if player.ship %}
-      {% if player.sector %}
-        <p>You are currently in sector {{str(player.sector)}}</p>
-        <p>Available Warps: 
-        {% for sector in warps %}
-          <!-- TODO: /c/move/sector needs to be escaped, dashes won't work -->
-          <a href="/c/move/?cluster={{sector.parent.name}}&sector={{sector.name}}">{{ str(sector) }}</a>
-        {% end %}
-        </p>
-      {% else %}
-        <p>Almost there, you can <a href="/add/home">establish your home sector</a> to claim your space in the universe and start exploring!</p>
+    {% if ship and sector %}
+      <p>You are currently in sector {{str(sector)}}</p>
+      <p>Available Warps: 
+      {% for available_sector in warps %}
+        <!-- TODO: /c/move/sector needs to be escaped, dashes won't work -->
+        <a href="/c/move/?sector={{available_sector.id}}">{{ str(available_sector) }}</a>
       {% end %}
+      </p>
     {% else %}
-      <p>When you are ready, you can <a href="/add/ship">build your first ship</a>.</p>
+      <p>Almost there, you can <a href="/add/home">establish your home sector</a> to claim your space in the universe and start exploring!</p>
     {% end %}
   {% else %}
     <p>Welcome. You will need to <a href="/add/player">create a player</a> before proceeding.</p>
