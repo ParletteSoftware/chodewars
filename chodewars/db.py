@@ -30,7 +30,7 @@ class Database(object):
   
   def create_logger(self,name):
     self.log = logging.getLogger(name)
-    self.log.setLevel(logging.DEBUG)
+    self.log.setLevel(logging.INFO)
     
     #Log Format
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -104,9 +104,8 @@ class Database(object):
     """Add a sector to the given cluster. The cluster is pulled from the Sector object."""
     return self.save_object(sector)
   
-  def get_sector(self,cluster,sector_name):
+  def get_sector(self,sector_name):
     """Retrieve a list of all items in a sector."""
-    #TODO: change sector names to include cluster everywhere?
     return self.load_object_by_name(sector_name)
   
   def add_planet(self,planet):
@@ -208,11 +207,16 @@ class FlatFileDatabase(Database):
     for f in os.listdir(self.path):
       o = self.load_object(f)
       self.log.debug("load_object() returned %s, checking it for name of %s" % (str(o),name))
-      #TODO: support sectors with cluster_name-name
+      
       if o and o.name == name:
         self.log.info("load_object_by_name(): Found object %s matching name parameter of %s" % (str(o),name))
         self.log.debug("load_object_by_name(): %s dictionary: %s" % (str(o),o.to_dict()))
         return o
+      else:
+        #Handle sectors
+        if o and o.type == "Sector" and "%s-%s" % (o.cluster_name,o.name) == name:
+          self.log.info("load_object_by_name(): Found sector %s matching name parameter of %s" % (str(o),name))
+          return o
     self.log.info("load_object_by_name(): No object found with name %s, returning None" % name)
     return None
   

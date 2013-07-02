@@ -89,6 +89,7 @@ class Game(object):
   
   def assign_child(self,parent,child):
     """Assign a child to a parent object and save both objects"""
+    previous_parent = self.get_parent(child)
     self.log.debug("Assigning %s as a child of %s" % (child,parent))
     if child.id in parent.children:
       self.log.debug("%s is already a child of %s" % (child,parent))
@@ -98,7 +99,18 @@ class Game(object):
       self.save_object(parent)
       self.save_object(child)
       self.log.debug("Added child %s to %s" % (child,parent))
-      return True
+      
+      #Remove child from previous parent
+      if previous_parent:
+        if previous_parent.remove_child(child):
+          self.save_object(previous_parent)
+          self.log.debug("Removed child %s from %s" % (child,previous_parent))
+          return True
+        else:
+          self.log.error("Error removing child %s from %s, remove_child() returned False" % (child,previous_parent))
+          return False
+      else:
+        return True
     return False
   
   def add_player(self,player):
@@ -122,15 +134,9 @@ class Game(object):
   def save_object(self,entity):
     return self.db.save_object(entity)
   
-  def load_object(self,object_type,name,parent_name = None):
-    """Load an object from the database.
-    
-    Some objects (like sectors) require the parent to load."""
-    if object_type == "sector":
-      if name and parent_name:
-        return self.db.get_sector(self.db.get_cluster(parent_name),name)
-    
-    return None
+  def load_object(self,name):
+    """Load an object from the database."""
+    return self.db.load_object_by_name(name)
   
   def _load_clusters(self):
     """Load the clusters instance variable from the database using the list in the config."""
@@ -161,7 +167,7 @@ class Game(object):
     empty_sector = None
     while not empty_sector:
       random_sector_name = random.randint(1,int(random_cluster.x)*int(random_cluster.y))
-      random_sector = self.db.get_sector(random_cluster,random_sector_name)
+      random_sector = self.db.get_sector("%s-%s" % (random_cluster,random_sector_name))
       if not random_sector:
         empty_sector = Sector(initial_state={'cluster_name':random_cluster.name,'name':random_sector_name})
     self.log.info("Empty sector found, returning %s" % empty_sector)
@@ -177,7 +183,9 @@ class Game(object):
     
     home_sector = self._find_empty_sector()
     self.log.debug("assign_home_sector(): Home sector determined to be %s" % home_sector.name)
-    if self.db.add_sector(home_sector):
+    #We call get_sector, which will create it if it doesn't exist
+    home_sector = self.get_sector("%s-%s" % (home_sector.cluster_name,home_sector.name))
+    if home_sector:
       #Create planet
       planet = Planet(initial_state = {'name':planet_name})
       self.log.debug("assign_home_sector(): Adding planet %s" % planet)
@@ -209,16 +217,15 @@ class Game(object):
     
     valid_container = False
     
-    if container.__class__.__name__ == "Sector":
+    if container.type == "Sector":
       if container in self.get_available_warps(ship = ship):
         valid_container = True
     
     if valid_container:
       self.log.info("Moving %s to %s" % (ship,container))
-      ship.parent = container
-      self.db.save_object(ship)
+      self.assign_child(container,ship)
       return True
-      
+    
     return False
   
   def visualize_cluster(self,player):
@@ -239,7 +246,7 @@ class Game(object):
       return []
   
   def get_available_warps(self,player = None,ship = None):
-    """Return a list of sectors available for the player."""
+    """Return a list of sector objects available for the player."""
     if not player and not ship:
       self.log.debug("get_available_warps(): Player and Ship are both None, returning empty list")
       return []
@@ -249,15 +256,16 @@ class Game(object):
     
     if player:
       self.log.info("get_available_warps(): Passing Player parameter is deprecated, pass ship instead.")
-      sector = player.parent.parent #Use the player's ship for location
+      sector = self.get_parent(self.get_parent(player)) #Use the player's ship for location
     if ship:
-      sector = ship.parent
+      sector = self.get_parent(ship)
     
     sectors = []
     if sector:
       sector_number = int(sector.name)
-      self.log.debug("Building list of available warps for sector %s" % sector)
-      cluster = sector.parent
+      self.log.debug("Building list of available warps for sector %s" % sector.to_dict())
+      cluster = self.get_parent(sector)
+      self.log.debug("Cluster loaded as %s" % str(cluster))
       
       self.log.debug("Calculations: %s mod %s = %s" % (sector_number,cluster.y,sector_number % cluster.y))
       
@@ -266,48 +274,62 @@ class Game(object):
       bottom_row = True if sector_number >= (cluster.x * cluster.y - cluster.x) else False
       right_column = True if sector_number % cluster.y == 0 else False
       
+      sector_names = []
       #nw
       if not top_row and not left_column:
-        self.log.debug("Adding Northwest sector to sectors list")
-        sectors.append(self.db.get_sector(cluster,(sector_number - cluster.x - 1),add = True))
-      
+        sector_names.append("%s-%s" % (sector.cluster_name,(sector_number - cluster.x - 1)))
+        
       #n
       if not top_row:
-        self.log.debug("Adding North sector to sectors list")
-        sectors.append(self.db.get_sector(cluster,(sector_number - cluster.x),add = True))
+        sector_names.append("%s-%s" % (sector.cluster_name,(sector_number - cluster.x)))
       
       #ne
       if not top_row and not right_column:
-        self.log.debug("Adding Northwest sector to sectors list")
-        sectors.append(self.db.get_sector(cluster,(sector_number - cluster.x + 1),add = True))
+        sector_names.append("%s-%s" % (sector.cluster_name,(sector_number - cluster.x + 1)))
       
       #e
       if not right_column:
-        self.log.debug("Adding East sector to sectors list")
-        sectors.append(self.db.get_sector(cluster,(sector_number + 1),add = True))
+        sector_names.append("%s-%s" % (sector.cluster_name,(sector_number + 1)))
       
       #se
       if not bottom_row and not right_column:
-        self.log.debug("Adding Southeast sector to sectors list")
-        sectors.append(self.db.get_sector(cluster,(sector_number + cluster.x + 1),add = True))
+        sector_names.append("%s-%s" % (sector.cluster_name,(sector_number + cluster.x + 1)))
       
       #s
       if not bottom_row:
-        self.log.debug("Adding South sector to sectors list")
-        sectors.append(self.db.get_sector(cluster,(sector_number + cluster.x),add = True))
+        sector_names.append("%s-%s" % (sector.cluster_name,(sector_number + cluster.x)))
       
       #sw
       if not bottom_row and not left_column:
-        self.log.debug("Adding Southwest sector to sectors list")
-        sectors.append(self.db.get_sector(cluster,(sector_number + cluster.x - 1),add = True))
+        sector_names.append("%s-%s" % (sector.cluster_name,(sector_number + cluster.x - 1)))
       
       #w
       if not left_column:
-        self.log.debug("Adding West sector to sectors list")
-        sectors.append(self.db.get_sector(cluster,(sector_number - 1),add = True))
+        sector_names.append("%s-%s" % (sector.cluster_name,(sector_number - 1)))
+      
+      for sector_name in sector_names:
+        sectors.append(self.get_sector(sector_name))
       
     return sorted(sectors, key = lambda sector: sector.name)
 
+  def get_sector(self,sector_name):
+    """Retrieve a sector object from the database. If it doesn't exist, then create it here."""
+    
+    loaded_sector = self.db.load_object_by_name(sector_name)
+    if loaded_sector:
+      return loaded_sector
+    else:
+      cluster_name = sector_name.split('-')[0]
+      name = sector_name.split('-')[1]
+      new_sector = Sector(initial_state = {'cluster_name': cluster_name,'name': name})
+      cluster = self.db.load_object_by_name(cluster_name)
+      self.log.debug("get_sector(): Loaded cluster as %s" % str(cluster))
+      self.assign_child(cluster,new_sector)
+      self.log.debug("get_sector(): Returning sector %s with parent %s" % (str(new_sector),str(new_sector.parent)))
+      return new_sector
+    
+    return None
+  
   def build_ship(self,player,ship_name):
     if player:
       ship = Ship(ship_name,player.sector)

@@ -64,3 +64,16 @@ class Entity(object):
       self.children.append(str(child.id))
       return True
     return False
+  
+  def remove_child(self,child):
+    """Remove a child object from this entity.
+    
+    Returns a boolean on if it was successful."""
+    
+    if str(child.id) in self.children:
+      self.children.remove(str(child.id))
+      #Make sure it was removed
+      return True if str(child.id) not in self.children else False
+    else:
+      print "child not found in self.children"
+    return True

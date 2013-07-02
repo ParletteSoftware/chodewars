@@ -1,4 +1,5 @@
-from chodewars import game,player,sector
+from chodewars import game,player,sector,ship
+from random import choice
 
 game_obj = None
 return_val = None #Global object variable, assigned by action, used by main script
@@ -36,6 +37,29 @@ class Action(object):
           parent_object = game_obj.get_parent(loaded_object)
           print "\tloaded object %s\n\t  with parent %s and sector %s" % (loaded_object,parent_object.name,game_obj.get_parent(parent_object))
       return "return_obj" if loaded_object else "return_none"
+    
+    if actions[0] == "move":
+      if actions[1] == "ship":
+        #Load player's ship'
+        ship = game_obj.load_object("Test Ship")
+        print "\tloaded %s in sector %s" % (ship.name,str(game_obj.get_parent(ship)))
+        if not ship: self.result = "return_false"
+        
+        #Get available warps
+        available_warps = game_obj.get_available_warps(ship=ship)
+        print "\tavailable warps are %s" % str(available_warps)
+        if not available_warps: self.result = "return_false"
+        
+        #Move the ship
+        if not game_obj.move_ship(ship,choice(available_warps)): self.result = "return_false"
+        
+        #Show the result
+        ship = game_obj.load_object("Test Ship")
+        print "\tloaded %s in sector %s" % (ship.name,str(game_obj.get_parent(ship)))
+        if ship:
+          self.result = "return_true"
+        else:
+          self.result = "return_false"
     
     #was expected result satisfied?
     if self.result == self.expected_result:
@@ -82,8 +106,13 @@ load_player = Test("load a player by id")
 load_player.add(Action("Load Player","get player email@email.com","return_id"))
 tests.append(load_player)
 
-#move_player = Test("move a player to a new sector")
-#move_player.add(Action("Move Player","move player to an adjacent sector")
+move_ship = Test("move a ship to an adjacent sector")
+move_ship.add(Action("Move Ship","move ship","return_true"))
+tests.append(move_ship)
+
+#load_ship = Test("load the current status of a ship")
+#load_ship.add(Action("Load Ship","get ship email@email.com"))
+#tests.append(load_ship)
 
 for test in tests:
   print "Test: %s" % test.title

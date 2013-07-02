@@ -11,6 +11,8 @@ class Sector(Entity):
     return "%s-%s" % (self.cluster_name,str(self.name))
   
   def __cmp__(self,other):
+    if other.__class__.__name__ != "Sector":
+      return -1
     if self.parent == other.parent:
       if self.name < other.name:
         return -1
