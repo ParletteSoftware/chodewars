@@ -1,9 +1,9 @@
+from entity import Entity
 from sector import Sector
 
-class Planet(object):
-  def __init__(self,sector,name):
-    self.sector = sector
-    self.name = name
+class Planet(Entity):
+  def __init__(self,initial_state = {}):
+    super(Planet,self).__init__(initial_state = initial_state)
     
   def __repr__(self):
-    return "%s (%s-%s)" % (self.name,self.sector.cluster.name,self.sector.id)
+    return "%s" % (self.name)
