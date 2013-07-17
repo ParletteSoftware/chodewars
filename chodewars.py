@@ -85,6 +85,7 @@ class MainHandler(BaseHandler):
       ship = ship,
       sector = sector,
       warps = warps,
+      game = game,
     )
 
 class LoginHandler(BaseHandler, tornado.auth.GoogleMixin):
