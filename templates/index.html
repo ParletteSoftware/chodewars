@@ -17,7 +17,7 @@
   {% if player %}
     <p>Welcome {{player.name}}</p>
     {% if ship and sector %}
-      {% module Template('sector.html', sector=sector, player=player, ship=ship) %}
+      {% module Template('sector.html', sector=sector, player=player, ship=ship, game=game) %}
       <p>Available Warps: 
       {% for available_sector in warps %}
         <!-- TODO: /c/move/sector needs to be escaped, dashes won't work -->

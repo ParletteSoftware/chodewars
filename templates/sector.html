@@ -1,1 +1,5 @@
 <p>You are currently in sector {{str(sector)}}</p>
+<p>Sector Contents:</p>
+{% for child in game.get_children(sector) %}
+  <p>&ndash;{{ str(child) }}</p>
+{% end %}
