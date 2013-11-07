@@ -30,20 +30,34 @@
 
 <div class="container">
   {% block header %}
-    <h1>{{ header_text }}</h1>
+    <div class="row">
+      <div class="col-md-12">
+        <h1 class="text-center">{{ header_text }}</h1>
+      </div>
+    </div>
   {% end %}
 
   {% block body %}
+    
     {% if player %}
       <p>Welcome {{player.name}}</p>
       {% if ship and sector %}
         {% module Template('sector.html', sector=sector, player=player, ship=ship, game=game) %}
-        <p>Available Warps: 
-        {% for available_sector in warps %}
-          <!-- TODO: /c/move/sector needs to be escaped, dashes won't work -->
-          <a href="/c/move/?sector={{available_sector.id}}">{{ str(available_sector) }}</a>
-        {% end %}
-        </p>
+        <div class="row">
+          <div class="col-md-12 text-center">
+            Adjacent Sectors
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12 text-center">
+            <div class="btn-group">
+              {% for available_sector in warps %}
+                <!-- TODO: /c/move/sector needs to be escaped, dashes won't work -->
+                <button type="button" class="btn btn-default" href="/c/move/?sector={{available_sector.id}}">{{ str(available_sector) }}</button>
+              {% end %}
+            </div>
+          </div>
+        </div>
       {% else %}
         <p>Almost there, you can <a href="/add/home">establish your home sector</a> to claim your space in the universe and start exploring!</p>
       {% end %}
