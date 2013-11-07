@@ -1,0 +1,29 @@
+<html>
+<head>
+	<title>{{ escape(page_title) }}</title>
+  <link rel="stylesheet" href="{{ static_url("site.css") }}" type="text/css"/>
+</head>
+<body>
+  <div id='toolbar' class="inline">
+    {% block toolbar %}{% end %}
+  </div>
+	<div id="container">
+		<header>
+			{% block header %}<h1>Hello.</h1>{% end %}
+		</header>
+		<div id="main">
+			<div id="content">
+				{% block body %}{% end %}
+			</div>
+		</div>
+		<footer>
+			{% block footer %}{% end %}
+		</footer>
+	</div>
+	</body>
+</html>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" ></script>
+
+<script language="javascript">
+</script>

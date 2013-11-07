@@ -1,0 +1,37 @@
+{% extends "main.html" %}
+
+{% block toolbar %}
+  <div class="right">
+    {{ user['name'] }} 
+    <a href="/logout" id="logout_button">Logout</a>
+  </div>
+{% end %}
+
+{% block header %}
+  <hr>
+	<h1>{{ header_text }}</h1>
+  <hr>
+{% end %}
+
+{% block body %}
+  {% if player %}
+    <p>Welcome {{player.name}}</p>
+    {% if ship and sector %}
+      {% module Template('sector.html', sector=sector, player=player, ship=ship, game=game) %}
+      <p>Available Warps: 
+      {% for available_sector in warps %}
+        <!-- TODO: /c/move/sector needs to be escaped, dashes won't work -->
+        <a href="/c/move/?sector={{available_sector.id}}">{{ str(available_sector) }}</a>
+      {% end %}
+      </p>
+    {% else %}
+      <p>Almost there, you can <a href="/add/home">establish your home sector</a> to claim your space in the universe and start exploring!</p>
+    {% end %}
+  {% else %}
+    <p>Welcome. You will need to <a href="/add/player">create a player</a> before proceeding.</p>
+  {% end %}
+{% end %}
+
+{% block footer %}
+		<p>{{ footer_text }}<br><a href='https://github.com/ChodeGames/chodewars'>source</a></p>
+{% end %} 
