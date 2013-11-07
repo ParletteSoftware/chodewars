@@ -53,7 +53,7 @@
             <div class="btn-group">
               {% for available_sector in warps %}
                 <!-- TODO: /c/move/sector needs to be escaped, dashes won't work -->
-                <button type="button" class="btn btn-default" href="/c/move/?sector={{available_sector.id}}">{{ str(available_sector) }}</button>
+                <a type="button" class="btn btn-default" href="/c/move/?sector={{available_sector.id}}">{{ str(available_sector) }}</a>
               {% end %}
             </div>
           </div>
