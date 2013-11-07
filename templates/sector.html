@@ -1,5 +1,25 @@
-<p>You are currently in sector {{str(sector)}}</p>
-<p>Sector Contents:</p>
-{% for child in game.get_children(sector) %}
-  <p>&ndash;{{ str(child) }}</p>
-{% end %}
+<div class="row">
+  <div class="col-md-1"></div>
+  <div class="col-md-10 text-center">
+    <div class="panel panel-default">
+      <div class="panel-heading">{{str(sector)}}</div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-md-12 text-center">
+            <div class="row">
+              {% for child in game.get_children(sector) %}
+                <div class="col-md-2">
+                  <div class="panel panel-default">
+                    <div class="panel-heading">type</div>
+                    <div class="panel-body">{{ str(child) }}</div>
+                  </div>
+                </div>
+              {% end %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-1"></div>
+</div>
