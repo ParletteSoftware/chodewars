@@ -28,3 +28,6 @@ pip-log.txt
 
 # Data directory
 data/
+
+# Log files
+*.log
