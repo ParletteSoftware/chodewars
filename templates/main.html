@@ -1,11 +1,12 @@
 <html>
 <head>
-	<title>{{ escape(page_title) }}</title>
-  <link rel="stylesheet" href="{{ static_url("css/bootstrap.css") }}" type="text/css"/>
-  <link rel="stylesheet" href="{{ static_url("css/site.css") }}" type="text/css"/>
+  <title>{{ escape(page_title) }}</title>
+  <link rel="stylesheet" type="text/css" media="all" href="{{ static_url('css/bootstrap.min.css') }}" />
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script type="text/javascript" language="javascript" charset="utf-8" src="{{ static_url('js/bootstrap.min.js') }}"></script>
 </head>
 <body>
-  <div id='toolbar' class="inline">
+  <div id='toolbar'>
     {% block toolbar %}{% end %}
   </div>
 	<div id="container">
