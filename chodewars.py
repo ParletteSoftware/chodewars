@@ -77,7 +77,7 @@ class MainHandler(BaseHandler):
     
     self.render(
       "index.html",
-      page_title = "Here's a page",
+      page_title = "chodewars",
       header_text = "Heading",
       footer_text = "Chodewars",
       user = self.current_user,
