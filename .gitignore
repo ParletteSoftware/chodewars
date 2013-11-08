@@ -25,3 +25,9 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
+
+# Data directory
+data/
+
+# Log files
+*.log

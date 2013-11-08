@@ -1,5 +1,50 @@
-<p>You are currently in sector {{str(sector)}}</p>
-<p>Sector Contents:</p>
-{% for child in game.get_children(sector) %}
-  <p>&ndash;{{ str(child) }}</p>
-{% end %}
+<div class="row">
+  <div class="col-md-1"></div>
+  <div class="col-md-10 text-center">
+    <div class="panel panel-default">
+      <div class="panel-heading">{{str(sector)}}</div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-md-12 text-center">
+            <div class="row">
+              {% for child in game.get_children(sector) %}
+                <div class="col-md-2">
+                  <div class="panel 
+                  {% if str(child.type) == 'Planet' %}
+                    panel-success
+                  {% elif str(child.type) == 'Ship' %}
+                    panel-info
+                  {% else %}
+                    panel-default
+                  {% end %}
+                  ">
+                    <div class="panel-heading">
+                      <div class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                          {{ str(child.type) }} <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu" role="menu">
+                          {% if child.landable %}
+                            <li><a href="#">Land</a></li>
+                          {% end %}
+                          {% if child.dockable %}
+                            <li><a href="#">Dock</a></li>
+                          {% end %}
+                          {% if child.scanable %}
+                            <li><a href="#">Scan</a></li>
+                          {% end %}
+                        </ul>
+                      </div>
+                    </div>
+                    <div class="panel-body">{{ str(child) }}</div>
+                  </div>
+                </div>
+              {% end %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-1"></div>
+</div>
