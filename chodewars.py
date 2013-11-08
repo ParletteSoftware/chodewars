@@ -65,6 +65,9 @@ class MainHandler(BaseHandler):
   @tornado.web.authenticated
   def get(self):
     player = self.get_current_player()
+    if not player:
+      self.redirect("/add/player")
+    
     ship = game.get_parent(player) if player else None
     if player: print "player loaded as %s" % str(player.to_dict())
     if ship: print "ship loaded as %s" % str(ship.to_dict())
