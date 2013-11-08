@@ -2,6 +2,7 @@
 <head>
   <title>{{ escape(page_title) }}</title>
   <link rel="stylesheet" type="text/css" media="all" href="{{ static_url('css/bootstrap.min.css') }}" />
+  <link rel="stylesheet" type="text/css" media="all" href="{{ static_url('css/site.css') }}" />
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script type="text/javascript" language="javascript" charset="utf-8" src="{{ static_url('js/bootstrap.min.js') }}"></script>
 </head>
@@ -9,23 +10,14 @@
   <div id='toolbar'>
     {% block toolbar %}{% end %}
   </div>
-	<div id="container">
-		<header>
-			{% block header %}<h1>Hello.</h1>{% end %}
-		</header>
+	<div>
+		{% block header %}<h1>Hello.</h1>{% end %}
 		<div id="main">
 			<div id="content">
 				{% block body %}{% end %}
 			</div>
 		</div>
-		<footer>
-			{% block footer %}{% end %}
-		</footer>
+		{% block footer %}{% end %}
 	</div>
 	</body>
 </html>
-
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" ></script>
-
-<script language="javascript">
-</script>
