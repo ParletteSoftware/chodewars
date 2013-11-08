@@ -30,17 +30,19 @@
 
 <div class="container">
   {% block header %}
+  <!--
     <div class="row">
       <div class="col-md-12">
         <h1 class="text-center">{{ header_text }}</h1>
       </div>
     </div>
+  -->
   {% end %}
 
   {% block body %}
     
     {% if player %}
-      <p>Welcome {{player.name}}</p>
+      <!--<p>Welcome {{player.name}}</p>-->
       {% if ship and sector %}
         {% module Template('sector.html', sector=sector, player=player, ship=ship, game=game) %}
         <div class="row">
