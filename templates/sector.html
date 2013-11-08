@@ -9,8 +9,16 @@
             <div class="row">
               {% for child in game.get_children(sector) %}
                 <div class="col-md-2">
-                  <div class="panel panel-default">
-                    <div class="panel-heading">type</div>
+                  <div class="panel 
+                  {% if str(child.type) == 'Planet' %}
+                    panel-success
+                  {% elif str(child.type) == 'Ship' %}
+                    panel-info
+                  {% else %}
+                    panel-default
+                  {% end %}
+                  ">
+                    <div class="panel-heading">{{ str(child.type) }}</div>
                     <div class="panel-body">{{ str(child) }}</div>
                   </div>
                 </div>
