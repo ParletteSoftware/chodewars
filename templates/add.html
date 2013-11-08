@@ -1,18 +1,5 @@
 {% extends "main.html" %}
 
-{% block toolbar %}
-  <div class="right">
-    {{ "test" #user['name'] }} 
-    <a href="/logout" id="logout_button">Logout</a>
-  </div>
-{% end %}
-
-{% block header %}
-  <hr>
-	<h1>{{ header_text }}</h1>
-  <hr>
-{% end %}
-
 {% block body %}
   <div class="add">
   {% if add_type == "player" %}
