@@ -18,7 +18,24 @@
                     panel-default
                   {% end %}
                   ">
-                    <div class="panel-heading">{{ str(child.type) }}</div>
+                    <div class="panel-heading">
+                      <div class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                          {{ str(child.type) }} <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu" role="menu">
+                          {% if child.landable %}
+                            <li><a href="#">Land</a></li>
+                          {% end %}
+                          {% if child.dockable %}
+                            <li><a href="#">Dock</a></li>
+                          {% end %}
+                          {% if child.scanable %}
+                            <li><a href="#">Scan</a></li>
+                          {% end %}
+                        </ul>
+                      </div>
+                    </div>
                     <div class="panel-body">{{ str(child) }}</div>
                   </div>
                 </div>
