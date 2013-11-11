@@ -115,7 +115,7 @@ class AddHandler(BaseHandler):
   def get(self,add_type):
     self.render(
       "add.html",
-      page_title = "Add Something",
+      page_title = "Create Player",
       header_text = "Create",
       footer_text = "Chodewars",
       user = self.current_user,
