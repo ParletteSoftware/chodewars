@@ -142,20 +142,6 @@ class AddHandler(BaseHandler):
             print "planet_name or ship_name was not received, nothing was created for this player"
         else:
           print "Error creating player %s" % name
-      else:
-        #Player object should exist
-        if add_type == "home":
-          planet_name = self.get_argument('planet_name',None)
-          ship_name = self.get_argument('ship_name',None)
-          if planet_name and ship_name:
-            player = self.get_current_player()
-            print "Creating home sector..."
-            if game.assign_home_sector(player,planet_name,ship_name):
-              print "...ok"
-            else:
-              print "Error assigning home sector for %s" % str(player)
-          else:
-            print "planet_name or ship_name was not received, nothing was created for this player"
     else:
       print "Game is not initialized!"
         

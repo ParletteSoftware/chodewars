@@ -26,14 +26,5 @@
         <input type="submit" class="btn btn-default" value="Create Player"/>
       </form>
     {% end %}
-    {% if add_type == "home" %}
-      <form id="add_home" action="/add/home" method="post">
-        <label for="planet_name">Planet Name</label>
-        <input type="text" name="planet_name" placeholder="Planet Name"/>
-        <label for="ship_name">Ship Name</label>
-        <input type="text" name="ship_name" placeholder="Ship Name"/>
-        <input type="submit" value="Create Home Sector"/>
-      </form>
-    {% end %}
   </div>
 {% end %}
