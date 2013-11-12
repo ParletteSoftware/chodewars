@@ -3,14 +3,27 @@
 {% block body %}
   <div class="add text-center">
     {% if add_type == "player" %}
-      <form id="add_player" action="/add/player" method="post">
-        <label for="name">Player Name</label>
-        <input type="text" name="name" placeholder="Name"/>
-        <label for="planet_name">Planet Name</label>
-        <input type="text" name="planet_name" placeholder="Planet Name"/>
-        <label for="ship_name">Ship Name</label>
-        <input type="text" name="ship_name" placeholder="Ship Name"/>
-        <input type="submit" value="Create Player"/>
+      <form id="add_player" action="/add/player" method="post"
+       class="form-horizontal" role="form">
+        <div class="form-group">
+          <label for="name" class="col-sm-4 control-label">Player Name</label>
+          <div class="col-sm-6">
+            <input type="text" name="name" class="form-control" placeholder="Name"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="planet_name" class="col-sm-4 control-label">Planet Name</label>
+          <div class="col-sm-6">
+            <input type="text" name="planet_name" class="form-control" placeholder="Planet Name"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="ship_name" class="col-sm-4 control-label">Ship Name</label>
+          <div class="col-sm-6">
+            <input type="text" name="ship_name" class="form-control" placeholder="Ship Name"/>
+          </div>
+        </div>
+        <input type="submit" class="btn btn-default" value="Create Player"/>
       </form>
     {% end %}
     {% if add_type == "home" %}
