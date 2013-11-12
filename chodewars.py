@@ -65,6 +65,9 @@ class MainHandler(BaseHandler):
   @tornado.web.authenticated
   def get(self):
     player = self.get_current_player()
+    if not player:
+      self.redirect("/add/player")
+    
     ship = game.get_parent(player) if player else None
     if player: print "player loaded as %s" % str(player.to_dict())
     if ship: print "ship loaded as %s" % str(ship.to_dict())
@@ -112,7 +115,7 @@ class AddHandler(BaseHandler):
   def get(self,add_type):
     self.render(
       "add.html",
-      page_title = "Add Something",
+      page_title = "Create Player",
       header_text = "Create",
       footer_text = "Chodewars",
       user = self.current_user,
@@ -126,11 +129,6 @@ class AddHandler(BaseHandler):
         print "Creating new player %s..." % name
         if game.add_player(Player(initial_state = {'id':self.current_user['email'],'name':name})):
           print "Player %s created" % name
-        else:
-          print "Error creating player %s" % name
-      else:
-        #Player object should exist
-        if add_type == "home":
           planet_name = self.get_argument('planet_name',None)
           ship_name = self.get_argument('ship_name',None)
           if planet_name and ship_name:
@@ -142,6 +140,8 @@ class AddHandler(BaseHandler):
               print "Error assigning home sector for %s" % str(player)
           else:
             print "planet_name or ship_name was not received, nothing was created for this player"
+        else:
+          print "Error creating player %s" % name
     else:
       print "Game is not initialized!"
         
