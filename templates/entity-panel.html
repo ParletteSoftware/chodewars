@@ -1,34 +1,41 @@
-<div class="panel 
-{% if str(entity.type) == 'Planet' %}
-  panel-success
-{% elif str(entity.type) == 'Ship' %}
-  panel-info
-{% else %}
-  panel-default
-{% end %}
-">
-  <div class="panel-heading">
-    <div class="dropdown">
-      <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-        {{ str(entity.type) }} <span class="caret"></span>
-      </a>
-      <ul class="dropdown-menu" role="menu">
-        {% if entity.landable %}
-          <li><a href="/c/land/?target={{entity.id}}">Land</a></li>
-        {% end %}
-        {% if entity.dockable %}
-          <li><a href="/c/dock/?target={{entity.id}}">Dock</a></li>
-        {% end %}
-        {% if entity.scanable %}
-          <li><a href="/c/scan/?target={{entity.id}}">Scan</a></li>
-        {% end %}
-      </ul>
+<div class="col-md-3">
+  <div class="panel 
+  {% if str(entity.type) == 'Planet' %}
+    panel-success
+  {% elif str(entity.type) == 'Ship' %}
+    panel-info
+  {% else %}
+    panel-default
+  {% end %}
+  ">
+    <div class="panel-heading">
+      <div class="dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+          {{ str(entity.type) }} <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu" role="menu">
+          {% if entity.landable %}
+            <li><a href="/c/land/?target={{entity.id}}">Land</a></li>
+          {% end %}
+          {% if entity.dockable %}
+            <li><a href="/c/dock/?target={{entity.id}}">Dock</a></li>
+          {% end %}
+          {% if entity.scanable %}
+            <li><a href="/c/scan/?target={{entity.id}}">Scan</a></li>
+          {% end %}
+        </ul>
+      </div>
+    </div> <!-- panel-heading -->
+    <div class="panel-body">
+      {{ str(entity) }}
     </div>
-  </div>
-  <div class="panel-body">
-    {{ str(entity) }}
-    {% if entity.habitable %}
-      Population: {{ str(entity.population) }}
-    {% end %}
-  </div>
+    <ul class="list-group">
+      {% if entity.habitable %}
+        <li class="list-group-item">
+          <span class="badge">{{ str(entity.population) }}</span>
+          <small>Population</small>
+        </li>
+      {% end %}
+    </ul>
+  </div> <!-- panel -->
 </div>
