@@ -48,3 +48,19 @@
   </div>
   <div class="col-md-1"></div>
 </div>
+<div class="row">
+  <div class="col-md-12 text-center">
+    Adjacent Sectors
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12 text-center">
+    <div class="btn-group">
+      {% set warps = game.get_available_warps(ship = ship) if ship else None %}
+      {% for available_sector in warps %}
+        <!-- TODO: /c/move/sector needs to be escaped, dashes won't work -->
+        <a type="button" class="btn btn-default" href="/c/move/?sector={{available_sector.id}}">{{ str(available_sector) }}</a>
+      {% end %}
+    </div>
+  </div>
+</div>

@@ -73,8 +73,6 @@ class MainHandler(BaseHandler):
     #for line in game.visualize_cluster(player):
       #print "%s\n" % line
     
-    warps = game.get_available_warps(ship = ship) if player and ship else None
-    
     self.render(
       "index.html",
       page_title = "chodewars",
@@ -82,9 +80,8 @@ class MainHandler(BaseHandler):
       footer_text = "Chodewars",
       user = self.current_user,
       player = player,
-      ship = ship,
-      sector = sector,
-      warps = warps,
+      ship = game.get_parent(player),
+      ship_location = game.get_parent(ship),
       game = game,
     )
 
