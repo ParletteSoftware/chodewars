@@ -1,41 +1,22 @@
 {% extends "main.html" %}
 
-{% block toolbar %}
-<!-- Header navbar -->
-<div class="navbar navbar-default navbar-static-top" role="navigation">
-  <div class="container">
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <a class="navbar-brand" href="#">chodewars</a>
+{% block body %}
+  {% module Template('sector.html', sector=sector, player=player, ship=ship, game=game) %}
+  <div class="row">
+    <div class="col-md-12 text-center">
+      Adjacent Sectors
     </div>
-    <div class="collapse navbar-collapse">
-      <ul class="nav navbar-nav">
-        <li class="active"><a href="#">Home</a></li>
-        <li><a href="#about">About</a></li>
-      </ul>
-      <ul class="nav navbar-nav pull-right">
-        <li><a href='#'>{{ user['name'] }}</a></li>
-        <li><a href='/logout'>Logout</a></li>
-      </ul>
-    </div><!--/.nav-collapse -->
   </div>
-</div>
-<!-- End Header navbar -->
-{% end %}
-
-<div class="container">
-  {% block header %}
-  <!--
-    <div class="row">
-      <div class="col-md-12">
-        <h1 class="text-center">{{ header_text }}</h1>
+  <div class="row">
+    <div class="col-md-12 text-center">
+      <div class="btn-group">
+        {% for available_sector in warps %}
+          <!-- TODO: /c/move/sector needs to be escaped, dashes won't work -->
+          <a type="button" class="btn btn-default" href="/c/move/?sector={{available_sector.id}}">{{ str(available_sector) }}</a>
+        {% end %}
       </div>
     </div>
+
   -->
   {% end %}
 

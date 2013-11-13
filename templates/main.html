@@ -8,16 +8,41 @@
 </head>
 <body>
   <div id='toolbar'>
-    {% block toolbar %}{% end %}
+    <!-- Header navbar -->
+    <div class="navbar navbar-default navbar-static-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">chodewars</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Home</a></li>
+            <li><a href="#about">About</a></li>
+          </ul>
+          <ul class="nav navbar-nav pull-right">
+            <li><a href='#'>{{ user['name'] }}</a></li>
+            <li><a href='/logout'>Logout</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+    <!-- End Header navbar -->
   </div>
 	<div>
-		{% block header %}<h1>Hello.</h1>{% end %}
 		<div id="main">
-			<div id="content">
+			<div id="content" class="container">
 				{% block body %}{% end %}
 			</div>
 		</div>
-		{% block footer %}{% end %}
+		<!-- TODO: Move to about page
+      <small class="text-center footer">{{ footer_text }}<br><a href='https://github.com/ChodeGames/chodewars'>source</a></small>
+    -->
 	</div>
 	</body>
 </html>
