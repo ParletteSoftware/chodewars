@@ -68,7 +68,7 @@ class MainHandler(BaseHandler):
     ship = game.get_parent(player) if player else None
     if player: print "player loaded as %s" % str(player.to_dict())
     if ship: print "ship loaded as %s" % str(ship.to_dict())
-    sector = game.get_parent(ship) if ship else None
+    render_location = game.get_parent(ship) if ship else None
     
     #for line in game.visualize_cluster(player):
       #print "%s\n" % line
@@ -80,8 +80,8 @@ class MainHandler(BaseHandler):
       footer_text = "Chodewars",
       user = self.current_user,
       player = player,
-      ship = game.get_parent(player),
-      render_location = game.get_parent(ship),
+      ship = ship,
+      render_location = render_location,
       game = game,
     )
 

@@ -25,5 +25,10 @@
       </ul>
     </div>
   </div>
-  <div class="panel-body">{{ str(entity) }}</div>
+  <div class="panel-body">
+    {{ str(entity) }}
+    {% if entity.habitable %}
+      Population: {{ str(entity.population) }}
+    {% end %}
+  </div>
 </div>
