@@ -24,7 +24,7 @@ class Entity(object):
     self.tradeable = initial_state['tradeable'] if 'tradeable' in initial_state else False
     self.dockable = initial_state['dockable'] if 'dockable' in initial_state else False
     self.scanable = initial_state['scanable'] if 'scanable' in initial_state else False
-    self.scanable = initial_state['habitable'] if 'habitable' in initial_state else False
+    self.habitable = initial_state['habitable'] if 'habitable' in initial_state else False
     
     #Variables
     self.population = int(initial_state['population']) if 'population' in initial_state else 0
