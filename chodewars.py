@@ -81,7 +81,7 @@ class MainHandler(BaseHandler):
       user = self.current_user,
       player = player,
       ship = game.get_parent(player),
-      ship_location = game.get_parent(ship),
+      render_location = game.get_parent(ship),
       game = game,
     )
 
@@ -158,6 +158,18 @@ class CommandHandler(BaseHandler):
           if sector:
             print "Moving player"
             game.move_ship(game.get_parent(player),sector)
+      if command in ("land"):
+        target_id = self.get_argument("target",default = None, strip = True)
+        if target_id:
+          target = game.load_object_by_id(target_id)
+          if target:
+            print "Landing on %s" % str(target)
+            game.move_ship(game.get_parent(player),target)
+      if command in ("takeoff"):
+        ship = game.get_parent(player)
+        current_ship_location = game.get_parent(ship)
+        if current_ship_location.type in ("Planet"):
+          game.move_ship(ship,game.get_parent(current_ship_location))
     else:
       self.write("Game not initialized")
     

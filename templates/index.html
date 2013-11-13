@@ -40,8 +40,10 @@
   {% end %}
 
   {% block body %}
-    {% if ship_location.type == "Sector" %}
-      {% module Template('sector.html', sector=ship_location, player=player, ship=ship, game=game) %}
+    {% if render_location.type == "Sector" %}
+      {% module Template('sector.html', sector=render_location, player=player, ship=ship, game=game) %}
+    {% elif render_location.type == "Planet" %}
+      {% module Template('planet.html', planet=render_location, player=player, ship=ship, game=game) %}
     {% end %}
   {% end %}
 
