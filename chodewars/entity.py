@@ -19,10 +19,16 @@ class Entity(object):
     #Children is a list of ids that belong to this entity
     self.children = initial_state['children'] if 'children' in initial_state else []
     
+    #Attributes
     self.landable = initial_state['landable'] if 'landable' in initial_state else False
     self.tradeable = initial_state['tradeable'] if 'tradeable' in initial_state else False
     self.dockable = initial_state['dockable'] if 'dockable' in initial_state else False
     self.scanable = initial_state['scanable'] if 'scanable' in initial_state else False
+    self.scanable = initial_state['habitable'] if 'habitable' in initial_state else False
+    
+    #Variables
+    self.population = int(initial_state['population']) if 'population' in initial_state else 0
+    self.population_growth = int(initial_state['population_growth']) if 'population_growth' in initial_state else 0
   
   def __repr__(self):
     return str(self.name)
