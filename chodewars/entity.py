@@ -25,10 +25,13 @@ class Entity(object):
     self.dockable = initial_state['dockable'] if 'dockable' in initial_state else False
     self.scanable = initial_state['scanable'] if 'scanable' in initial_state else False
     self.habitable = initial_state['habitable'] if 'habitable' in initial_state else False
+    self.countable = initial_state['countable'] = initial_state['countable'] if 'countable' in initial_state else False
     
     #Variables
     self.population = int(initial_state['population']) if 'population' in initial_state else 0
     self.population_growth = int(initial_state['population_growth']) if 'population_growth' in initial_state else 0
+    self.count = initial_state['count'] = initial_state['count'] if 'count' in initial_state else 0
+    self.growth_percent = initial_state['growth_percent'] = initial_state['growth_percent'] if 'growth_percent' in initial_state else 0.0
   
   def __repr__(self):
     return str(self.name)

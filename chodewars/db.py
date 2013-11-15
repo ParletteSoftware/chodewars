@@ -9,6 +9,7 @@ from cluster import Cluster
 from planet import Planet
 from sector import Sector
 from ship import Ship
+from commodity import Commodity
 
 class Database(object):
   """This is a base class which defines the methods that need to be implemented for database operations.
@@ -256,6 +257,8 @@ class FlatFileDatabase(Database):
           return Planet(initial_state = json_dict)
         elif json_dict['type'] == "Ship":
           return Ship(initial_state = json_dict)
+        elif json_dict['type'] == "Commodity":
+          return Commodity(initial_state = json_dict)
         else:
           return Entity(initial_state = json_dict)
       except TypeError,te:

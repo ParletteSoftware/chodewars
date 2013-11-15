@@ -1,7 +1,9 @@
 import logging
 import db
 import random
+import os
 
+from ConfigParser import ConfigParser
 from collections import deque
 
 from player import Player
@@ -9,6 +11,7 @@ from cluster import Cluster
 from sector import Sector
 from planet import Planet
 from ship import Ship
+from commodity import Commodity
 
 class Game(object):
   def __init__(self,bigbang = False):
@@ -35,6 +38,7 @@ class Game(object):
     #Setup instance variables
     self.db = None
     self.clusters = {}
+    self.commodities = list()
     
     #Output a header to the log
     self.log.info("\n%s\nGame Initialized: %s\n%s" % ("_" * 20,"","_" * 20))
@@ -60,6 +64,22 @@ class Game(object):
     #Universe Config
     self.cluster_size = 10
     self.cluster_list = ['alpha']
+    
+    #Load commodities
+    commodity_config = ConfigParser()
+    conf_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),'commodity.conf')
+    self.log.debug("About to read commodity conf file from %s" % conf_path)
+    commodity_config.readfp(open(conf_path))
+    self.log.debug("commodity.conf sections: %s" % commodity_config.sections())
+    for section in commodity_config.sections():
+      self.log.debug("Processing commodity section %s" % section)
+      for option in commodity_config.options(section):
+        initial_state = {'name':commodity_config.get(section,option)}
+        c = Commodity(initial_state)
+        self.log.debug("Adding commodity %s to commodities list" % c)
+        if c not in self.commodities:
+          self.commodities.append(c)
+    self.log.info("Commodity list is %s" % self.commodities)
     
     return True
   
@@ -193,6 +213,12 @@ class Game(object):
     if home_sector:
       #Create planet
       planet = Planet(initial_state = {'name':planet_name})
+      #Add commodities
+      for commodity in self.commodities:
+        self.assign_child(planet,Commodity(initial_state = {'name': commodity.name,
+                                                            'count': 10
+                                                            }))
+      
       self.log.debug("assign_home_sector(): Adding planet %s" % planet)
       self.assign_child(home_sector,planet)
       
