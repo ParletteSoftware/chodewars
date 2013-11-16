@@ -1,39 +1,30 @@
 {% extends "main.html" %}
 
-{% block toolbar %}
-  <div class="right">
-    {{ "test" #user['name'] }} 
-    <a href="/logout" id="logout_button">Logout</a>
-  </div>
-{% end %}
-
-{% block header %}
-  <hr>
-	<h1>{{ header_text }}</h1>
-  <hr>
-{% end %}
-
 {% block body %}
-  <div class="add">
-  {% if add_type == "player" %}
-    <form id="add_player" action="/add/player" method="post">
-      <label for="name">Player Name</label>
-      <input type="text" name="name" placeholder="Name"/>
-      <input type="submit" value="Create Player"/>
-    </form>
-  {% end %}
-  {% if add_type == "home" %}
-    <form id="add_home" action="/add/home" method="post">
-      <label for="planet_name">Planet Name</label>
-      <input type="text" name="planet_name" placeholder="Planet Name"/>
-      <label for="ship_name">Ship Name</label>
-      <input type="text" name="ship_name" placeholder="Ship Name"/>
-      <input type="submit" value="Create Home Sector"/>
-    </form>
-  {% end %}
+  <div class="add text-center">
+    {% if add_type == "player" %}
+      <form id="add_player" action="/add/player" method="post"
+       class="form-horizontal" role="form">
+        <div class="form-group">
+          <label for="name" class="col-sm-4 control-label">Player Name</label>
+          <div class="col-sm-6">
+            <input type="text" name="name" class="form-control" placeholder="Name"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="planet_name" class="col-sm-4 control-label">Planet Name</label>
+          <div class="col-sm-6">
+            <input type="text" name="planet_name" class="form-control" placeholder="Planet Name"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="ship_name" class="col-sm-4 control-label">Ship Name</label>
+          <div class="col-sm-6">
+            <input type="text" name="ship_name" class="form-control" placeholder="Ship Name"/>
+          </div>
+        </div>
+        <input type="submit" class="btn btn-default" value="Create Player"/>
+      </form>
+    {% end %}
   </div>
 {% end %}
-
-{% block footer %}
-		<p>{{ footer_text }}<br><a href='https://github.com/ChodeGames/chodewars'>source</a></p>
-{% end %} 

@@ -40,31 +40,10 @@
   {% end %}
 
   {% block body %}
-    
-    {% if player %}
-      <!--<p>Welcome {{player.name}}</p>-->
-      {% if ship and sector %}
-        {% module Template('sector.html', sector=sector, player=player, ship=ship, game=game) %}
-        <div class="row">
-          <div class="col-md-12 text-center">
-            Adjacent Sectors
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-md-12 text-center">
-            <div class="btn-group">
-              {% for available_sector in warps %}
-                <!-- TODO: /c/move/sector needs to be escaped, dashes won't work -->
-                <a type="button" class="btn btn-default" href="/c/move/?sector={{available_sector.id}}">{{ str(available_sector) }}</a>
-              {% end %}
-            </div>
-          </div>
-        </div>
-      {% else %}
-        <p>Almost there, you can <a href="/add/home">establish your home sector</a> to claim your space in the universe and start exploring!</p>
-      {% end %}
-    {% else %}
-      <p>Welcome. You will need to <a href="/add/player">create a player</a> before proceeding.</p>
+    {% if render_location.type == "Sector" %}
+      {% module Template('sector.html', sector=render_location, player=player, ship=ship, game=game) %}
+    {% elif render_location.type == "Planet" %}
+      {% module Template('planet.html', planet=render_location, player=player, ship=ship, game=game) %}
     {% end %}
   {% end %}
 

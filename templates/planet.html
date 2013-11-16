@@ -1,0 +1,32 @@
+<div class="row">
+  <div class="col-md-1"></div>
+  <div class="col-md-10 text-center">
+    <div class="panel panel-success">
+      <div class="panel-heading">{{str(planet)}}</div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-md-12 text-center">
+            <div class="row">
+              {% for child in game.get_children(planet) %}
+                  {% module Template('entity-panel.html', entity=child) %}
+              {% end %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-1"></div>
+</div>
+<div class="row">
+  <div class="col-md-12 text-center">
+    Actions
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12 text-center">
+    <div class="btn-group">
+      <a type="button" class="btn btn-default" href="/c/takeoff/">Take Off</a>
+    </div>
+  </div>
+</div>

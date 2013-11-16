@@ -218,19 +218,30 @@ class Game(object):
   def move_ship(self,ship,container):
     """Move the ship to another container (such as a sector or planet).
     
-    Currently this only supports moving to sectors."""
+    Currently this only supports moving to sectors and planets."""
     
     valid_container = False
     
     if container.type == "Sector":
-      if container in self.get_available_warps(ship = ship):
+      # If moving from one sector to another
+      if self.get_parent(ship).type in ("Sector"):
+        if container in self.get_available_warps(ship = ship):
+          valid_container = True
+      # If moving to a sector from a planet
+      if self.get_parent(ship).type in ("Planet"):
+        if self.get_parent(ship) in self.get_children(container):
+          valid_container = True
+    # If landing on a planet
+    if container.type == "Planet":
+      if container in self.get_children(self.get_parent(ship)):
         valid_container = True
     
     if valid_container:
       self.log.info("Moving %s to %s" % (ship,container))
       self.assign_child(container,ship)
       return True
-    
+
+    self.log.info("%s was found to be an invalid entity to move to for ship %s" % (container,ship))
     return False
   
   #TODO: take a sector or cluster as a parameter
