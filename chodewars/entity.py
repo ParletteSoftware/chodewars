@@ -22,16 +22,16 @@ class Entity(object):
     #Attributes
     self.landable = initial_state['landable'] if 'landable' in initial_state else False
     self.tradeable = initial_state['tradeable'] if 'tradeable' in initial_state else False
+    self.transferable = initial_state['transferable'] if 'transferable' in initial_state else False
     self.dockable = initial_state['dockable'] if 'dockable' in initial_state else False
     self.scanable = initial_state['scanable'] if 'scanable' in initial_state else False
     self.habitable = initial_state['habitable'] if 'habitable' in initial_state else False
     self.countable = initial_state['countable'] = initial_state['countable'] if 'countable' in initial_state else False
     
     #Variables
-    self.population = int(initial_state['population']) if 'population' in initial_state else 0
-    self.population_growth = int(initial_state['population_growth']) if 'population_growth' in initial_state else 0
-    self.count = initial_state['count'] = initial_state['count'] if 'count' in initial_state else 0
-    self.growth_percent = initial_state['growth_percent'] = initial_state['growth_percent'] if 'growth_percent' in initial_state else 0.0
+    if self.countable:
+      self.count = initial_state['count'] = initial_state['count'] if 'count' in initial_state else 0
+      self.growth_percent = initial_state['growth_percent'] = initial_state['growth_percent'] if 'growth_percent' in initial_state else 0.0
   
   def __repr__(self):
     return str(self.name)
@@ -45,11 +45,14 @@ class Entity(object):
     else:
       return 1
   
-  def to_dict(self):
+  def to_dict(self, no_id = False):
     """Return a dictionary of all of the values of this object (excluding parent and children).
     
     We only use parent and children ids since that could cause some very large dictionaries when
-    converting a cluster to a dictionary, which would include all sectors, ships, players, and so on."""
+    converting a cluster to a dictionary, which would include all sectors, ships, players, and so on.
+    
+    The no_id parameter is useful when creating a clone of this entity, such as with commodities.
+    """
     
     #We don't want to modify the instance's dictionary, so we make a copy first
     d = dict(self.__dict__)
@@ -64,6 +67,10 @@ class Entity(object):
     #print "children: %s" % str(self.children)
     #for child in self.children:
       #d['children'].append(str(child))
+    
+    if no_id:
+      del d['id']
+    
     return d
   
   def add_child(self,child):

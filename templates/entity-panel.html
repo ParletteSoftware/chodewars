@@ -23,18 +23,29 @@
           {% if entity.scanable %}
             <li><a href="/c/scan/?target={{entity.id}}">Scan</a></li>
           {% end %}
+          {% if entity.tradeable %}
+            <li><a href="/c/trade/?source={{entity.id}}&target={{ship.id}}">Trade</a></li>
+          {% end %}
+          {% if entity.transferable %}
+            <li><a href="/c/transfer/?source={{entity.id}}&target={{ship.id}}">Transfer</a></li>
+          {% end %}
         </ul>
       </div>
     </div> <!-- panel-heading -->
     <div class="panel-body">
       {{ str(entity) }}
+      {% if entity.countable %}
+        <span class="badge pull-right">{{ str(entity.count) }}</span>
+      {% end %}
     </div>
     <ul class="list-group">
-      {% if entity.habitable %}
-        <li class="list-group-item">
-          <span class="badge">{{ str(entity.population) }}</span>
-          <small>Population</small>
-        </li>
+      {% for child in children %}
+        {% if child.countable %}
+          <li class="list-group-item">
+            <span class="badge">{{ str(child.count) }}</span>
+            <small>{{ str(child.name) }}</small>
+          </li>
+        {% end %}
       {% end %}
     </ul>
   </div> <!-- panel -->

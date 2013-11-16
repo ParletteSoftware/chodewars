@@ -170,6 +170,15 @@ class CommandHandler(BaseHandler):
         current_ship_location = game.get_parent(ship)
         if current_ship_location.type in ("Planet"):
           game.move_ship(ship,game.get_parent(current_ship_location))
+      if command in ("transfer","trade"):
+        #TODO
+        #source is a commodity
+        #target is a ship
+        source_id = self.get_argument("source", default = None, strip = True)
+        target_id = self.get_argument("target", default = None, strip = True)
+        if source_id and target_id:
+          game.move_child(game.load_object_by_id(source_id),
+                          game.load_object_by_id(target_id))
     else:
       self.write("Game not initialized")
     

@@ -72,9 +72,16 @@ class Game(object):
     commodity_config.readfp(open(conf_path))
     self.log.debug("commodity.conf sections: %s" % commodity_config.sections())
     for section in commodity_config.sections():
-      self.log.debug("Processing commodity section %s" % section)
-      for option in commodity_config.options(section):
-        initial_state = {'name':commodity_config.get(section,option)}
+      options = commodity_config.options(section)
+      self.log.debug("Processing commodity section %s with options %s" % (section,options))
+      if 'name' in options:
+        initial_state = {'name':commodity_config.get(section,'name')}
+        if 'tradeable' in options:
+          initial_state['tradeable'] = commodity_config.getboolean(section,'tradeable')
+        if 'transferable' in options:
+          initial_state['transferable'] = commodity_config.getboolean(section,'transferable')
+        if 'count' in options:
+          initial_state['count'] =commodity_config.getint(section,'count')
         c = Commodity(initial_state)
         self.log.debug("Adding commodity %s to commodities list" % c)
         if c not in self.commodities:
@@ -104,7 +111,12 @@ class Game(object):
     """Return a list of child objects for the given entity"""
     children = []
     for child_id in entity.children:
-      children.append(self.db.load_object(child_id))
+      child_obj = self.db.load_object(child_id)
+      self.log.debug("Loaded %s as a child of %s: %s" % (child_obj.name,
+                                                         entity.name,
+                                                         str(child_obj.to_dict())))
+      children.append(child_obj)
+    self.log.debug("Loaded children for %s: %s" % (entity.name,str(children)))
     return children
   
   def assign_child(self,parent,child):
@@ -158,10 +170,14 @@ class Game(object):
   
   def load_object(self,name):
     """Load an object from the database."""
-    return self.db.load_object_by_name(name)
+    obj = self.db.load_object_by_name(name)
+    self.log.debug("Loaded object %s: %s" % (name,str(obj.to_dict())))
+    return obj
   
   def load_object_by_id(self,id):
-    return self.db.load_object(id)
+    obj = self.db.load_object(id)
+    self.log.debug("Loaded object %s: %s" % (obj.name,str(obj.to_dict())))
+    return obj
   
   def _load_clusters(self):
     """Load the clusters instance variable from the database using the list in the config."""
@@ -215,9 +231,8 @@ class Game(object):
       planet = Planet(initial_state = {'name':planet_name})
       #Add commodities
       for commodity in self.commodities:
-        self.assign_child(planet,Commodity(initial_state = {'name': commodity.name,
-                                                            'count': 10
-                                                            }))
+        self.assign_child(planet,Commodity(initial_state = commodity.to_dict(no_id = True)))
+        self.log.debug("Created a new commodity for planet. Original commodity id: %s" % commodity.id)
       
       self.log.debug("assign_home_sector(): Adding planet %s" % planet)
       self.assign_child(home_sector,planet)
@@ -233,13 +248,11 @@ class Game(object):
       self.log.error("assign_home_sector(): db.add_sector() returned None, so the sector was not successfully created")
       return False
     
-  def move_player(self,player,cluster_name,sector_name):
-    """Deprecated, use move_ship() instead.
+  def move_child(self,entity_to_move,new_parent):
+    """Move an entity to a new parent."""
     
-    Moving the player is accomplished by moving their ship (the player's parent)."""
-    
-    #We now use move_ship instead
-    return move_ship(player.parent,self.load_object("sector",name = sector_name, parent = cluster_name))
+    former_parent = self.get_parent(entity_to_move)
+    self.assign_child(new_parent,entity_to_move)
   
   def move_ship(self,ship,container):
     """Move the ship to another container (such as a sector or planet).
