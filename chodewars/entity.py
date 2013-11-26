@@ -32,6 +32,7 @@ class Entity(object):
     if self.countable:
       self.count = initial_state['count'] = initial_state['count'] if 'count' in initial_state else 0
       self.growth_percent = initial_state['growth_percent'] = initial_state['growth_percent'] if 'growth_percent' in initial_state else 0.0
+    self.holds = initial_state['holds'] if 'holds' in initial_state else 0
   
   def __repr__(self):
     return str(self.name)

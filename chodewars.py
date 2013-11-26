@@ -184,8 +184,28 @@ class CommandHandler(BaseHandler):
     
     self.redirect("/")
   
-  def post(self,command,argument):
-    pass
+  def post(self,command):
+    if game:
+      if command in ("transfer","trade"):
+        print "Executing %s" % command
+        commodity_id = self.get_argument('from','')
+        print "commodity_id is %s" % commodity_id
+        commodity = game.load_object_by_id(commodity_id)
+        print "Commodity loaded as %s" % commodity
+        target = game.load_object_by_id(self.get_argument('to',''))
+        print "Target loaded as %s" % target
+        amount = self.get_argument('amount',0)
+        #print "Creating new player %s..." % name
+        if game.move_commodity(commodity,
+                               target,
+                               amount):
+          print "%s of %s moved to %s" % (amount,commodity,target)
+        else:
+          print "Error moving %s of %s to %s" % (amount,commodity,target)
+    else:
+      print "Game is not initialized!"
+        
+    self.redirect("/")
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Process command line options.')

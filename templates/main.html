@@ -5,6 +5,7 @@
   <link rel="stylesheet" type="text/css" media="all" href="{{ static_url('css/site.css') }}" />
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script type="text/javascript" language="javascript" charset="utf-8" src="{{ static_url('js/bootstrap.min.js') }}"></script>
+  <script type="text/javascript" language="javascript" charset="utf-8" src="{{ static_url('js/chodewars.js') }}"></script>
 </head>
 <body>
   <div id='toolbar'>
@@ -44,5 +45,6 @@
       <small class="text-center footer">{{ footer_text }}<br><a href='https://github.com/ChodeGames/chodewars'>source</a></small>
     -->
 	</div>
+  {% block dialogs %}{% end %}
 	</body>
 </html>

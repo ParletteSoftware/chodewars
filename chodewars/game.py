@@ -231,8 +231,7 @@ class Game(object):
       planet = Planet(initial_state = {'name':planet_name})
       #Add commodities
       for commodity in self.commodities:
-        self.assign_child(planet,Commodity(initial_state = commodity.to_dict(no_id = True)))
-        self.log.debug("Created a new commodity for planet. Original commodity id: %s" % commodity.id)
+        self.add_commodity(planet,commodity.name,commodity.count)
       
       self.log.debug("assign_home_sector(): Adding planet %s" % planet)
       self.assign_child(home_sector,planet)
@@ -282,6 +281,81 @@ class Game(object):
 
     self.log.info("%s was found to be an invalid entity to move to for ship %s" % (container,ship))
     return False
+  
+  def move_commodity(self,commodity,target,amount):
+    """Move some amount of a commodity to the target entity."""
+    
+    #Make sure the target is valid
+    valid_target = False
+    if target.type in ('Ship','Planet'):
+      valid_target = True
+    
+    if valid_target:
+      self.log.debug("%s has a count of %s, request is to move %s to %s" % (commodity,
+                                                                            commodity.count,
+                                                                            amount,
+                                                                            target))
+      if int(amount) > int(self.available_holds(target)):
+        self.log.error("%s is greater than the available holds on %s (currently %s)" %
+                       (amount,target,self.available_holds(target)))
+        return False
+      if int(amount) < int(commodity.count):
+        self.log.debug("%s has a count of %s, moving %s to %s" % (commodity,
+                                                                  commodity.count,
+                                                                  amount,
+                                                                  target))
+        #Moving some of a commodity
+        if self.add_commodity(target,commodity.name,amount):
+          commodity.count -= int(amount)
+          self.save_object(commodity)
+          self.log.debug("Moved %s count of %s to %s" % (amount,commodity,target))
+          return True
+      else:
+        self.log.debug("Moving all of %s to %s" % (commodity,target))
+        #Moving all of a commodity
+        self.assign_child(target,commodity)
+        self.log.debug("Moved all %s to %s" % (commodity,target))
+        return True
+    
+    return False
+  
+  def add_commodity(self,entity,commodity_name,amount):
+    """Add a commodity from self.commodities using the given commodity name."""
+    for child in self.get_children(entity):
+      if child.name == commodity_name:
+        #commodity already exists for this entity
+        child.count = int(child.count) + int(amount)
+        self.save_object(child)
+        return True
+    
+    #commodity does not exist for this entity
+    #copy it from the self.commodities master list
+    initial_state = self.get_commodity_by_name(commodity_name).to_dict(no_id = True)
+    initial_state['count'] = int(amount)
+    new_commodity = Commodity(initial_state)
+    self.assign_child(entity,new_commodity)
+    self.log.debug("Created a new commodity %s with amount %s for %s" % (new_commodity,new_commodity.count,entity))
+    return True
+  
+  def get_commodity_by_name(self,commodity_name):
+    """Return a commodity object from the master commodities list."""
+    for commodity in self.commodities:
+      if commodity.name == commodity_name:
+        return commodity
+    return None
+  
+  def available_holds(self,entity):
+    """Return the number of holds available to the entity."""
+    if int(entity.holds):
+      if len(entity.children):
+        open_holds = int(entity.holds)
+        for child_id in entity.children:
+          child = self.load_object_by_id(child_id)
+          if child.countable:
+            open_holds = int(open_holds) - int(child.count)
+        return open_holds
+      return int(entity.holds)
+    return 0
   
   #TODO: take a sector or cluster as a parameter
   def visualize_cluster(self,player):
@@ -386,7 +460,7 @@ class Game(object):
       return new_sector
     
     return None
-    
+  
 class Cache(deque):
   """Hold a cache of objects of a limited size. When the cache is full, the oldest item is removed from the left."""
   def __init__(self,size,database):
