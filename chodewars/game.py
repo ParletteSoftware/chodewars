@@ -39,6 +39,7 @@ class Game(object):
     self.db = None
     self.clusters = {}
     self.commodities = list()
+    self._error = None
     
     #Output a header to the log
     self.log.info("\n%s\nGame Initialized: %s\n%s" % ("_" * 20,"","_" * 20))
@@ -50,6 +51,17 @@ class Game(object):
       self.big_bang()
     else:
       self._load_clusters()
+  
+  def has_error(self):
+    return True if self._error else False
+  
+  def error(self,error = None):
+    if error:
+      self._error = error
+      return True
+    e = self._error
+    self._error = None
+    return e
   
   def load_config(self):
     self.log.debug("Loading configuration")
@@ -298,6 +310,8 @@ class Game(object):
       if int(amount) > int(self.available_holds(target)):
         self.log.error("%s is greater than the available holds on %s (currently %s)" %
                        (amount,target,self.available_holds(target)))
+        self.error("%s does not have enough holds! (%s currently available)" % (target,
+                                                                                self.available_holds(target)))
         return False
       if int(amount) < int(commodity.count):
         self.log.debug("%s has a count of %s, moving %s to %s" % (commodity,

@@ -38,6 +38,11 @@
 	<div>
 		<div id="main">
 			<div id="content" class="container">
+        {% if game.has_error() %}
+          <div class="alert alert-danger">
+            {{ str(game.error()) }}
+          </div>
+        {% end %}
 				{% block body %}{% end %}
 			</div>
 		</div>
