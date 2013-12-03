@@ -24,16 +24,24 @@
             <li><a href="/c/scan/?target={{entity.id}}">Scan</a></li>
           {% end %}
           {% if entity.tradeable %}
-            <li><a href="/c/trade/?source={{entity.id}}&target={{ship.id}}">Trade</a></li>
+            <li>
+              <a href="#" class="trade" 
+                 data-toggle="modal"
+                 data-target="#trade_modal"
+                 data-source={{ str(entity.id) }} 
+                 data-destination={{ str(ship.id) }}
+                 data-amount={{ str(game.available_holds(ship)) }}>Trade</a>
+            </li>
           {% end %}
           {% if entity.transferable %}
-            <li><a href="#" class="transfer" 
+            <li>
+              <a href="#" class="transfer" 
                  data-toggle="modal"
                  data-target="#transfer_modal"
                  data-source={{ str(entity.id) }} 
                  data-destination={{ str(ship.id) }}
-                 data-amount={{ str(game.available_holds(ship)) }}>Transfer</a></li>
-            <!--<li><a href="/c/transfer/?source={{entity.id}}&target={{ship.id}}">Transfer</a></li>-->
+                 data-amount={{ str(game.available_holds(ship)) }}>Transfer</a>
+            </li>
           {% end %}
         </ul>
       </div>

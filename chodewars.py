@@ -117,6 +117,7 @@ class AddHandler(BaseHandler):
       footer_text = "Chodewars",
       user = self.current_user,
       add_type = add_type,
+      game = game,
     )
   
   def post(self,add_type):

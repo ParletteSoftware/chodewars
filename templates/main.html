@@ -38,7 +38,7 @@
 	<div>
 		<div id="main">
 			<div id="content" class="container">
-        {% if game.has_error() %}
+        {% if game and game.has_error() %}
           <div class="alert alert-danger">
             {{ str(game.error()) }}
           </div>
